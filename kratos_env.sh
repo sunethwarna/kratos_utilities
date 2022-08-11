@@ -56,11 +56,11 @@ Help()
     cd $current_path
 
     echo
-    echo "Once the environment is initializedsuccessfully, then following commands can be accessed."
+    echo "Once the environment is initialized successfully, then following commands can be accessed."
     echo
-    echo "            kratos_compile: compiles currently loaded kratos environment and re-initializes the environment"
-    echo "      kratos_compile_clean: cleans compiles currently loaded kratos environment and re-initializes the environment"
-    echo "    kratos_paraview_output: creates xdmf file using the given h5 files for paraview visualization"
+    echo "            kratos_compile: Compiles currently loaded kratos environment and re-initializes the environment"
+    echo "      kratos_compile_clean: Cleans and compiles currently loaded kratos environment and re-initializes the environment"
+    echo "    kratos_paraview_output: Creates xdmf file using the given h5 files for paraview visualization"
     echo "             kratos_unload: Unloads kratos environment"
 }
 
@@ -176,9 +176,9 @@ else
         echo "Initialized kratos environment at $KRATOS_PATH using $CC compiler with $KRATOS_BUILD_TYPE build type successfully."
         echo
         echo "Following commands are available:"
-        echo "            kratos_compile: compiles currently loaded kratos environment and re-initializes the environment"
-        echo "      kratos_compile_clean: cleans compiles currently loaded kratos environment and re-initializes the environment"
-        echo "    kratos_paraview_output: creates xdmf file using the given h5 files for paraview visualization"
+        echo "            kratos_compile: Compiles currently loaded kratos environment and re-initializes the environment"
+        echo "      kratos_compile_clean: Cleans compiles currently loaded kratos environment and re-initializes the environment"
+        echo "    kratos_paraview_output: Creates xdmf file using the given h5 files for paraview visualization"
         echo "             kratos_unload: Unloads kratos environment"
     fi
 fi
