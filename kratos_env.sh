@@ -125,11 +125,9 @@ else
             export KRATOS_BUILD_TYPE="RelWithDebInfo"
             ;;
         "debug")
-            echo "-- Using intel build type"
             export KRATOS_BUILD_TYPE="Debug"
             ;;
         "full_debug")
-            echo "-- Using intel build type"
             export KRATOS_BUILD_TYPE="FullDebug"
             ;;
         *)
@@ -159,6 +157,14 @@ else
             utilities_directory=$(cd `dirname $0` && pwd)
             echo "-- No default $KRATOS_PATH/scripts/configure.sh found. Copying the templated $utilities_directory/configure.sh.orig. file"
             cp $utilities_directory/configure.sh.orig $KRATOS_PATH/scripts/configure.sh
+        fi
+
+        if [ ! -f $KRATOS_PATH/.vscode/c_cpp_properties.json ]; then
+            utilities_directory=$(cd `dirname $0` && pwd)
+            echo "-- No default $KRATOS_PATH/.vscode/c_cpp_properties.json found. Copying the templated $utilities_directory/c_cpp_properties.json.orig. file"
+            mkdir -p $KRATOS_PATH/.vscode
+            cp $utilities_directory/c_cpp_properties.json.orig $KRATOS_PATH/.vscode/c_cpp_properties.json
+            sed -i "s+<KRATOS_PATH>+$KRATOS_PATH+g" $KRATOS_PATH/.vscode/c_cpp_properties.json
         fi
 
         export KRATOS_BUILD_PATH=${KRATOS_PATH}/bin/${CC}/${KRATOS_BUILD_TYPE}
