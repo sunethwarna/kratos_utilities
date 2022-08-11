@@ -2,7 +2,7 @@
 
 export OMP_NUM_THREADS=30
 export KRATOS_WORKTREE_MASTER_PATH="/software/kratos/master"
-export KRATOS_BINARY_PATH='/software/kratos/bin'
+export KRATOS_COMMON_INSTALLATION_PATH='/software/kratos/bin'
 
 export KRATOS_BASE_PATH=$(dirname $KRATOS_WORKTREE_MASTER_PATH)
 
@@ -144,11 +144,11 @@ else
     then
         export KRATOS_PATH=$KRATOS_BASE_PATH/$temp_environment_name
 
-        rm -rf $KRATOS_BASE_PATH/bin
-        mkdir -p $KRATOS_BASE_PATH/bin
+        rm -rf $KRATOS_COMMON_INSTALLATION_PATH
+        mkdir -p $KRATOS_COMMON_INSTALLATION_PATH
 
         if [ -d $KRATOS_PATH/bin/${CC}/${KRATOS_BUILD_TYPE} ]; then
-            cp -rf $KRATOS_PATH/bin/${CC}/${KRATOS_BUILD_TYPE}/* $KRATOS_BASE_PATH/bin/
+            cp -rf $KRATOS_PATH/bin/${CC}/${KRATOS_BUILD_TYPE}/* $KRATOS_COMMON_INSTALLATION_PATH/
         else
             echo "-- No binaries found for $KRATOS_PATH environment. please run kratos_compile command afterwards."
         fi
@@ -174,12 +174,12 @@ else
         export LD_LIBRARY_PATH=$KRATOS_LIBS_PATH:$LD_LIBRARY_PATH
         export PYTHONPATH=$KRATOS_BUILD_PATH:$PYTHONPATH
 
-        alias kratos_compile='current_path=$(pwd) && cd $KRATOS_PATH/scripts && unbuffer sh configure.sh 2>&1 | tee kratos.compile.log && cd $current_path || cd $current_path && rm -rf $KRATOS_BASE_PATH/bin && mkdir -p $KRATOS_BASE_PATH/bin && cp -rf $KRATOS_BUILD_PATH/* $KRATOS_BASE_PATH/bin/ && cp $KRATOS_PATH/build/${CC}/${KRATOS_BUILD_TYPE}/compile_commands.json $KRATOS_BASE_PATH/bin/'
-        alias kratos_compile_clean='current_path=$(pwd) && rm -rf $KRATOS_PATH/build/$KRATOS_BUILD_TYPE $KRATOS_PATH/bin/$KRATOS_BUILD_TYPE cd $current_path || cd $current_path && rm -rf $KRATOS_BASE_PATH/bin && mkdir -p $KRATOS_BASE_PATH/bin && cp -rf $KRATOS_BUILD_PATH/* $KRATOS_BASE_PATH/bin/ && cp $KRATOS_PATH/build/${CC}/${KRATOS_BUILD_TYPE}/compile_commands.json $KRATOS_BASE_PATH/bin/'
+        alias kratos_compile='current_path=$(pwd) && cd $KRATOS_PATH/scripts && unbuffer sh configure.sh 2>&1 | tee kratos.compile.log && cd $current_path || cd $current_path && rm -rf $KRATOS_COMMON_INSTALLATION_PATH && mkdir -p $KRATOS_COMMON_INSTALLATION_PATH && cp -rf $KRATOS_BUILD_PATH/* $KRATOS_COMMON_INSTALLATION_PATH/ && cp $KRATOS_PATH/build/${CC}/${KRATOS_BUILD_TYPE}/compile_commands.json $KRATOS_COMMON_INSTALLATION_PATH/'
+        alias kratos_compile_clean='current_path=$(pwd) && rm -rf $KRATOS_PATH/build/$KRATOS_BUILD_TYPE $KRATOS_PATH/bin/$KRATOS_BUILD_TYPE cd $current_path || cd $current_path && rm -rf $KRATOS_COMMON_INSTALLATION_PATH && mkdir -p $KRATOS_COMMON_INSTALLATION_PATH && cp -rf $KRATOS_BUILD_PATH/* $KRATOS_COMMON_INSTALLATION_PATH/ && cp $KRATOS_PATH/build/${CC}/${KRATOS_BUILD_TYPE}/compile_commands.json $KRATOS_COMMON_INSTALLATION_PATH/'
         alias kratos_paraview_output='python $KRATOS_PATH/applications/HDF5Application/python_scripts/create_xdmf_file.py'
-        alias kratos_unload='export PATH="${PATH//"$KRATOS_BUILD_PATH:"/}" && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH//"$KRATOS_LIBS_PATH:"/}" && export PYTHONPATH="${PYTHONPATH//"$KRATOS_BUILD_PATH:"/}" && unset KRATOS_BINARY_PATH KRATOS_BUILD_TYPE KRATOS_LIBS_PATH KRATOS_PATH KRATOS_BASE_PATH KRATOS_BUILD_PATH KRATOS_WORKTREE_MASTER_PATH && unalias kratos_unload kratos_compile kratos_paraview_output kratos_compile_clean'
+        alias kratos_unload='export PATH="${PATH//"$KRATOS_BUILD_PATH:"/}" && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH//"$KRATOS_LIBS_PATH:"/}" && export PYTHONPATH="${PYTHONPATH//"$KRATOS_BUILD_PATH:"/}" && unset KRATOS_COMMON_INSTALLATION_PATH KRATOS_BUILD_TYPE KRATOS_LIBS_PATH KRATOS_PATH KRATOS_BASE_PATH KRATOS_BUILD_PATH KRATOS_WORKTREE_MASTER_PATH && unalias kratos_unload kratos_compile kratos_paraview_output kratos_compile_clean'
 
-        echo "Initialized kratos environment at $KRATOS_PATH using $CC compiler with $KRATOS_BUILD_TYPE build type successfully."
+        echo "Initialized kratos environment at $KRATOS_PATH successfully using $CC compiler with $KRATOS_BUILD_TYPE build type."
         echo
         echo "Following commands are available:"
         echo "            kratos_compile: Compiles currently loaded kratos environment and re-initializes the environment"
