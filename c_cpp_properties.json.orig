@@ -2,32 +2,88 @@
     "env": {},
     "configurations": [
         {
-            "name": "release",
+            "name": "gcc_Release",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "compileCommands": "<KRATOS_PATH>/build/gcc/Release/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/build/gcc_Release/compile_commands.json"
         },
         {
-            "name": "rel_with_deb_info",
+            "name": "gcc_RelWithDebInfo",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "compileCommands": "<KRATOS_PATH>/build/gcc/RelWithDebInfo/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/build/gcc_RelWithDebInfo/compile_commands.json"
         },
         {
-            "name": "debug",
+            "name": "gcc_Debug",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "compileCommands": "<KRATOS_PATH>/build/gcc/Debug/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/build/gcc_Debug/compile_commands.json"
         },
         {
-            "name": "full_debug",
+            "name": "gcc_FullDebug",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "compileCommands": "<KRATOS_PATH>/build/gcc/FullDebug/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/build/gcc_FullDebug/compile_commands.json"
+        },
+        {
+            "name": "clang_Release",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/clang_Release/compile_commands.json"
+        },
+        {
+            "name": "clang_RelWithDebInfo",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/clang_RelWithDebInfo/compile_commands.json"
+        },
+        {
+            "name": "clang_Debug",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/clang_Debug/compile_commands.json"
+        },
+        {
+            "name": "clang_FullDebug",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/clang_FullDebug/compile_commands.json"
+        },
+        {
+            "name": "intel_Release",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/intel_Release/compile_commands.json"
+        },
+        {
+            "name": "intel_RelWithDebInfo",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/intel_RelWithDebInfo/compile_commands.json"
+        },
+        {
+            "name": "intel_Debug",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/intel_Debug/compile_commands.json"
+        },
+        {
+            "name": "intel_FullDebug",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compileCommands": "${workspaceFolder}/build/intel_FullDebug/compile_commands.json"
         }
     ],
     "version": 4

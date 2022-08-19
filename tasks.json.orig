@@ -1,0 +1,148 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "linux": {
+                "command": "sh",
+                "args": [
+                    "${workspaceFolder}/scripts/configure.sh"
+                ],
+                "problemMatcher": [
+                    {
+                        "owner": "cpp",
+                        "fileLocation": "absolute",
+                        "pattern": {
+                            "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                            "file": 1,
+                            "line": 2,
+                            "column": 3,
+                            "severity": 4,
+                            "message": 5
+                        }
+                    },
+                    {
+                        "owner": "cmake",
+                        "fileLocation": "relative",
+                        "pattern": {
+                            "regexp": "^CMake (.*) at(.*):([0-9]*) \\(file\\):",
+                            "file": 2,
+                            "line": 3,
+                            "severity": 1
+                        }
+                    }
+                ]
+            },
+            "options": {
+                "env": {
+                    "KRATOS_CPP_CONFIG_NAME": "${command:cpptools.activeConfigName}"
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always" //"silent"
+            }
+        },
+        {
+            "label": "Run all tests",
+            "type": "shell",
+            "linux": {
+                "command": "python"
+            },
+            "args": [
+                "${workspaceFolder}/kratos/python_scripts/testing/run_tests.py"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "OMP_NUM_THREADS": "30",
+                    "LD_LIBRARY_PATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}/libs",
+                    "PYTHONPATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}"
+                }
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always" //"silent"
+            }
+        },
+        {
+            "label": "Run cpp pattern tests",
+            "type": "shell",
+            "linux": {
+                "command": "python"
+            },
+            "args": [
+                "-c",
+                "import KratosMultiphysics as Kratos\nimport KratosMultiphysics.${input:Application}\nKratos.Tester.SetVerbosity(Kratos.Tester.Verbosity.TESTS_OUTPUTS)\nKratos.Tester.RunTestCases(\"*${input:TestNamePattern}*\")"
+            ],
+            "options": {
+                "cwd": "${fileDirname}",
+                "env": {
+                    "LD_LIBRARY_PATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}/libs",
+                    "PYTHONPATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}"
+                }
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always" //"silent"
+            },
+            "dependsOn": [
+                "Build"
+            ]
+        },
+        {
+            "label": "Run current file",
+            "type": "shell",
+            "linux": {
+                "command": "python"
+            },
+            "args": [
+                "${file}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}",
+                "env": {
+                    "LD_LIBRARY_PATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}/libs",
+                    "PYTHONPATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}"
+                }
+            },
+            "group": "test",
+            "presentation": {
+                "reveal": "always" //"silent"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "Application",
+            "type": "command",
+            "command": "memento.pickString",
+            "args": {
+                "id": "Application",
+                "description": "Application to be used",
+                "options": [
+                    "FluidDynamicsApplication",
+                    "HDF5Application",
+                    "RANSApplication"
+                ],
+                "default": "FluidDynamicsApplication"
+            }
+        },
+        {
+            "id": "TestNamePattern",
+            "type": "command",
+            "command": "memento.promptString",
+            "args": {
+                "id": "TestNamePattern",
+                "description": "Test name pattern without \"*\"",
+                "default": ""
+            }
+        }
+    ]
+}

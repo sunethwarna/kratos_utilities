@@ -10,14 +10,38 @@
 # You can find a list will all the compiation options in INSTALL.md or here:
 #   - https://github.com/KratosMultiphysics/Kratos/wiki/Compilation-options
 
+source /opt/intel/oneapi/setvars.sh intel64
+
 # Function to add apps
 add_app () {
     export KRATOS_APPLICATIONS="${KRATOS_APPLICATIONS}$1;"
 }
 
 # Set compiler
-# export CC=gcc
-# export CXX=g++
+export compiler_type=$(echo $KRATOS_CPP_CONFIG_NAME | cut -d"_" -f1)
+export KRATOS_BUILD_TYPE=$(echo $KRATOS_CPP_CONFIG_NAME | cut -d"_" -f2)
+
+case $compiler_type in
+    "gcc")
+        export CC=gcc
+        export CXX=g++
+        ;;
+    "clang")
+        export CC=clang
+        export CXX=clang++
+        ;;
+    "intel")
+        export CC=icx
+        export CXX=icpx
+        ;;
+    *)
+        echo "-- Unsupported compiler type provided in environment variable KRATOS_CPP_CONFIG_NAME. [ KRATOS_CPP_CONFIG_NAME = \"$KRATOS_CPP_CONFIG_NAME\" ]. Followings are the accepted compiler types:"
+        printf "\tgcc\n"
+        printf "\tclang\n"
+        printf "\tintel\n"
+        exit
+        ;;
+esac
 
 # Set variables
 export KRATOS_SOURCE="${KRATOS_SOURCE:-"$( cd "$(dirname "$0")" ; pwd -P )"/..}"
@@ -40,20 +64,20 @@ add_app ${KRATOS_APP_DIR}/LinearSolversApplication
 
 # Clean
 clear
-rm -rf "${KRATOS_BUILD}/${CC}/${KRATOS_BUILD_TYPE}/cmake_install.cmake"
-rm -rf "${KRATOS_BUILD}/${CC}/${KRATOS_BUILD_TYPE}/CMakeCache.txt"
-rm -rf "${KRATOS_BUILD}/${CC}/${KRATOS_BUILD_TYPE}/CMakeFiles"
+rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/cmake_install.cmake"
+rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/CMakeCache.txt"
+rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/CMakeFiles"
 
 # Configure
-cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${CC}/${KRATOS_BUILD_TYPE}" \
--DCMAKE_INSTALL_PREFIX="${KRATOS_SOURCE}/bin/${CC}/${KRATOS_BUILD_TYPE}" \
--DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
--DUSE_MPI=ON \
--DUSE_EIGEN_MKL=ON \
+cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"  \
+-DCMAKE_INSTALL_PREFIX="${KRATOS_SOURCE}/bin/${KRATOS_CPP_CONFIG_NAME}"   \
+-DCMAKE_EXPORT_COMPILE_COMMANDS=ON                                         \
+-DUSE_MPI=ON                                                               \
+-DUSE_EIGEN_MKL=ON                                                         \
 # -DUSE_COTIRE=ON \
 
 # Buid
-cmake --build "${KRATOS_BUILD}/${CC}/${KRATOS_BUILD_TYPE}" --target install -j10
+cmake --build "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}" --target install -j10
 
 # cmake --build "${KRATOS_BUILD}/${KRATOS_BUILD_TYPE}" --target all_unity -- -j8 && \
 # cmake --build "${KRATOS_BUILD}/${KRATOS_BUILD_TYPE}" --target install/fast -- -j8
