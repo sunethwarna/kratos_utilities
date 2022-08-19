@@ -176,7 +176,7 @@ else
         alias kratos_compile='current_path=$(pwd) && cd $KRATOS_PATH/scripts && unbuffer sh configure.sh 2>&1 | tee kratos.compile.log && cd $current_path || cd $current_path'
         alias kratos_compile_clean='current_path=$(pwd) && rm -rf $KRATOS_PATH/build/$KRATOS_CPP_CONFIG_NAME $KRATOS_PATH/bin/$KRATOS_CPP_CONFIG_NAME cd $current_path || cd $current_path'
         alias kratos_paraview_output='python $KRATOS_PATH/applications/HDF5Application/python_scripts/create_xdmf_file.py'
-        alias kratos_unload='export PATH="${PATH//"$KRATOS_BINARY_PATH:"/}" && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH//"$KRATOS_LIBS_PATH:"/}" && export PYTHONPATH="${PYTHONPATH//"$KRATOS_BINARY_PATH:"/}" && unset KRATOS_BUILD_TYPE KRATOS_LIBS_PATH KRATOS_PATH KRATOS_BASE_PATH KRATOS_BINARY_PATH KRATOS_WORKTREE_MASTER_PATH && unalias kratos_unload kratos_compile kratos_paraview_output kratos_compile_clean'
+        alias kratos_unload='export PATH="${PATH//"$KRATOS_BINARY_PATH:"/}" && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH//"$KRATOS_LIBS_PATH:"/}" && export PYTHONPATH="${PYTHONPATH//"$KRATOS_BINARY_PATH:"/}" && unset KRATOS_BUILD_TYPE KRATOS_LIBS_PATH KRATOS_PATH KRATOS_BASE_PATH KRATOS_BINARY_PATH KRATOS_WORKTREE_MASTER_PATH KRATOS_CPP_CONFIG_NAME && unalias kratos_unload kratos_compile kratos_paraview_output kratos_compile_clean'
 
         echo "Initialized kratos environment at $KRATOS_PATH successfully using $CC compiler with $KRATOS_BUILD_TYPE build type."
         echo
