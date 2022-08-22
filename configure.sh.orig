@@ -61,6 +61,7 @@ add_app ${KRATOS_APP_DIR}/MetisApplication
 add_app ${KRATOS_APP_DIR}/TrilinosApplication
 add_app ${KRATOS_APP_DIR}/RANSApplication
 add_app ${KRATOS_APP_DIR}/LinearSolversApplication
+add_app ${KRATOS_APP_DIR}/StatisticsApplication
 
 # Clean
 clear
@@ -69,8 +70,8 @@ rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/CMakeCache.txt"
 rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/CMakeFiles"
 
 # Configure
-cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"  \
--DCMAKE_INSTALL_PREFIX="${KRATOS_SOURCE}/bin/${KRATOS_CPP_CONFIG_NAME}"   \
+cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"   \
+-DCMAKE_INSTALL_PREFIX="${KRATOS_SOURCE}/bin/${KRATOS_CPP_CONFIG_NAME}"    \
 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON                                         \
 -DUSE_MPI=ON                                                               \
 -DUSE_EIGEN_MKL=ON                                                         \
@@ -78,6 +79,22 @@ cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"  \
 
 # Buid
 cmake --build "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}" --target install -j10
+
+# set .vscode python path correctly
+${PYTHON_EXECUTABLE} -c """
+import json
+from pathlib import Path
+Path('.vscode').mkdir(parents=True, exist_ok=True)
+if Path('.vscode/settings.json').is_file():
+    with open('.vscode/settings.json', 'r') as file_input:
+        data = json.loads(file_input.read())
+else:
+    data = {}
+data['python.analysis.extraPaths'] = ['./bin/${KRATOS_CPP_CONFIG_NAME}']
+with open('.vscode/settings.json', 'w') as file_output:
+    file_output.write(json.dumps(data, indent=4))
+print('--- VSCode python paths set correctly.')
+"""
 
 # cmake --build "${KRATOS_BUILD}/${KRATOS_BUILD_TYPE}" --target all_unity -- -j8 && \
 # cmake --build "${KRATOS_BUILD}/${KRATOS_BUILD_TYPE}" --target install/fast -- -j8
