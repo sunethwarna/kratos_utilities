@@ -11,7 +11,8 @@ Help()
     echo
     echo " Syntax: sh kratos_env.sh [options] [name] [compiler] [build_mode]"
     echo "options:"
-    echo "          -h, --help: Displays this help message."
+    echo "          -h, --help  : Displays this help message."
+    echo "          -r, --remove: Remove [name] worktree."
     echo "input arguments:"
     echo "            compiler: gcc, clang, intel"
     echo "          build_mode: release, rel_with_deb_info, debug, full_debug"
@@ -65,6 +66,11 @@ Help()
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     Help
+elif [ "$1" = "-r" ] || [ "$1" = "--remove" ]; then
+    current_path=$(pwd)
+    cd $KRATOS_WORKTREE_MASTER_PATH
+    git worktree remove $2
+    cd $current_path
 else
     environment_name=$1
     compiler_type=$2
