@@ -41,6 +41,8 @@ def SetVariableValues(model_part):
     # in this example, since I am not setting any PRESSURE values, it will try to remove as many nodes as possible in the un blocked regions
     # because the gradients are 0.0 everywhere. So in order to have some specialized refinement, you have to have some values in nodes so
     # that there will be some gradients.
+    # if you want you can read values from h5 to get some realistic distributions as well.
+
     geometric_center = Kratos.Array3(0.0)
     refinement_model_part = model_part.GetSubModelPart("Slip2D.Slip2D_cylinder")
     refinement_influence_radius = 0.3
