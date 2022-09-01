@@ -79,7 +79,7 @@
             },
             "args": [
                 "-c",
-                "import KratosMultiphysics as Kratos\nimport KratosMultiphysics.${input:Application}\nKratos.Tester.SetVerbosity(Kratos.Tester.Verbosity.TESTS_OUTPUTS)\nKratos.Tester.RunTestCases(\"*${input:TestNamePattern}*\")"
+                "from importlib import import_module\nimport KratosMultiphysics as Kratos\nif \"${input:Application}\" != \"None\": import_module(\"KratosMultiphysics.${input:Application}\")\nKratos.Tester.SetVerbosity(Kratos.Tester.Verbosity.TESTS_OUTPUTS)\nKratos.Tester.RunTestCases(\"*${input:TestNamePattern}*\")"
             ],
             "options": {
                 "cwd": "${fileDirname}",
