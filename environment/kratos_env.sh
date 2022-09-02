@@ -9,9 +9,11 @@ Help()
 {
     echo "Initializes specified kratos environment in the current terminal."
     echo
-    echo " Syntax: sh kratos_env.sh [options] [name] [compiler] [build_mode]"
+    echo " Syntax: sh kratos_env.sh [options] [name] [[compiler] [build_mode] | [branch_name]]"
     echo "options:"
     echo "          -h, --help  : Displays this help message."
+    echo "          -c, --create: Add a new branch with [branch_name] and create the work tree with [name]"
+    echo "          -a, --add   : Add a new work tree with [name] for branch with [branch_name]"
     echo "          -r, --remove: Remove [name] worktree."
     echo "input arguments:"
     echo "            compiler: gcc, clang, intel"
@@ -70,6 +72,22 @@ elif [ "$1" = "-r" ] || [ "$1" = "--remove" ]; then
     current_path=$(pwd)
     cd $KRATOS_WORKTREE_MASTER_PATH
     git worktree remove $2
+    cd $current_path
+elif [ "$1" = "-c" ] || [ "$1" = "--create" ]; then
+    current_path=$(pwd)
+    cd $KRATOS_WORKTREE_MASTER_PATH
+    git checkout master
+    git pull
+    git checkout -b $3
+    git checkout master
+    git worktree add ../$2 $3
+    cd $current_path
+elif [ "$1" = "-a" ] || [ "$1" = "--add" ]; then
+    current_path=$(pwd)
+    cd $KRATOS_WORKTREE_MASTER_PATH
+    git checkout master
+    git pull
+    git worktree add ../$2 $3
     cd $current_path
 else
     environment_name=$1
