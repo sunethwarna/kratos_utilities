@@ -9,12 +9,13 @@ Help()
 {
     echo "Initializes specified kratos environment in the current terminal."
     echo
-    echo " Syntax: sh kratos_env.sh [options] [name] [[compiler] [build_mode] | [branch_name]]"
+    echo " Syntax: sh kratos_env.sh [options] [environment name] [[compiler] [build_mode] | [branch_name]]"
     echo "options:"
     echo "          -h, --help  : Displays this help message."
-    echo "          -c, --create: Add a new branch with [branch_name] and create the work tree with [name]"
-    echo "          -a, --add   : Add a new work tree with [name] for branch with [branch_name]"
-    echo "          -r, --remove: Remove [name] worktree."
+    echo "          -c, --create: Add a new branch with [branch_name] and create the work tree with [environment name]"
+    echo "          -a, --add   : Add a new work tree with [environment name] for branch with [branch_name]"
+    echo "          -u, --update: Update a  work tree with [environment name]"
+    echo "          -r, --remove: Remove [environment name] worktree."
     echo "input arguments:"
     echo "            compiler: gcc, clang, intel"
     echo "          build_mode: release, rel_with_deb_info, debug, full_debug"
@@ -66,34 +67,8 @@ Help()
     echo "             kratos_unload: Unloads kratos environment"
 }
 
-if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
-    Help
-elif [ "$1" = "-r" ] || [ "$1" = "--remove" ]; then
-    current_path=$(pwd)
-    cd $KRATOS_WORKTREE_MASTER_PATH
-    git worktree remove $2
-    cd $current_path
-elif [ "$1" = "-c" ] || [ "$1" = "--create" ]; then
-    current_path=$(pwd)
-    cd $KRATOS_WORKTREE_MASTER_PATH
-    git checkout master
-    git pull
-    git checkout -b $3
-    git checkout master
-    git worktree add ../$2 $3
-    cd $current_path
-elif [ "$1" = "-a" ] || [ "$1" = "--add" ]; then
-    current_path=$(pwd)
-    cd $KRATOS_WORKTREE_MASTER_PATH
-    git checkout master
-    git pull
-    git worktree add ../$2 $3
-    cd $current_path
-else
-    environment_name=$1
-    compiler_type=$2
-    build_type=$3
-
+CheckEnvironmentName()
+{
     arr_names=""
     current_path=$(pwd)
     cd $KRATOS_WORKTREE_MASTER_PATH
@@ -117,6 +92,52 @@ else
         done <<< "$data"
         is_valid_options=false
     fi
+}
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    Help
+elif [ "$1" = "-r" ] || [ "$1" = "--remove" ]; then
+    environment_name=$2
+    CheckEnvironmentName
+    if $is_valid_options
+    then
+        current_path=$(pwd)
+        cd $KRATOS_WORKTREE_MASTER_PATH
+        git worktree remove $environment_name
+        cd $current_path
+    fi
+elif [ "$1" = "-c" ] || [ "$1" = "--create" ]; then
+    current_path=$(pwd)
+    cd $KRATOS_WORKTREE_MASTER_PATH
+    git checkout master
+    git pull
+    git checkout -b $3
+    git checkout master
+    git worktree add ../$2 $3
+    cd $current_path
+elif [ "$1" = "-a" ] || [ "$1" = "--add" ]; then
+    current_path=$(pwd)
+    cd $KRATOS_WORKTREE_MASTER_PATH
+    git checkout master
+    git pull
+    git worktree add ../$2 $3
+    cd $current_path
+elif [ "$1" = "-u" ] || [ "$1" = "--update" ]; then
+    environment_name=$2
+    CheckEnvironmentName
+    if $is_valid_options
+    then
+        current_path=$(pwd)
+        cd $KRATOS_WORKTREE_MASTER_PATH/../$environment_name
+        git pull
+        cd $current_path
+    fi
+else
+    environment_name=$1
+    compiler_type=$2
+    build_type=$3
+
+    CheckEnvironmentName
 
     case $compiler_type in
         "gcc")
@@ -161,54 +182,60 @@ else
 
     if $is_valid_options
     then
-        export KRATOS_PATH=$KRATOS_BASE_PATH/$temp_environment_name
-        export KRATOS_BINARY_PATH=${KRATOS_PATH}/bin/${compiler_type}_${KRATOS_BUILD_TYPE}
-        export KRATOS_LIBS_PATH=$KRATOS_BINARY_PATH/libs
+        if [ ! -z "$KRATOS_PATH" ]; then
+            existing_environment_name=$(echo $KRATOS_PATH | rev | cut -d"/" -f1 | rev)
+            echo "-- Found already existing kratos environment initialization named \"$existing_environment_name\" using $KRATOS_CPP_CONFIG_NAME."
+            echo "-- Please use \"kratos_unload\" to unload existing environment and try again to load the new environment."
+        else
+            export KRATOS_PATH=$KRATOS_BASE_PATH/$environment_name
+            export KRATOS_BINARY_PATH=${KRATOS_PATH}/bin/${compiler_type}_${KRATOS_BUILD_TYPE}
+            export KRATOS_LIBS_PATH=$KRATOS_BINARY_PATH/libs
 
-        if [ ! -f $KRATOS_PATH/scripts/configure.sh ]; then
-            utilities_directory=$(cd `dirname $0` && pwd)
-            echo "-- No default $KRATOS_PATH/scripts/configure.sh found. Copying the templated $utilities_directory/configure.sh.orig. file"
-            cp $utilities_directory/configure.sh.orig $KRATOS_PATH/scripts/configure.sh
+            if [ ! -f $KRATOS_PATH/scripts/configure.sh ]; then
+                utilities_directory=$(cd `dirname $0` && pwd)
+                echo "-- No default $KRATOS_PATH/scripts/configure.sh found. Copying the templated $utilities_directory/configure.sh.orig. file"
+                cp $utilities_directory/configure.sh.orig $KRATOS_PATH/scripts/configure.sh
+            fi
+
+            if [ ! -f $KRATOS_PATH/.vscode/c_cpp_properties.json ]; then
+                utilities_directory=$(cd `dirname $0` && pwd)
+                echo "-- No default $KRATOS_PATH/.vscode/c_cpp_properties.json found. Copying the templated $utilities_directory/c_cpp_properties.json.orig. file"
+                mkdir -p $KRATOS_PATH/.vscode
+                cp $utilities_directory/c_cpp_properties.json.orig $KRATOS_PATH/.vscode/c_cpp_properties.json
+            fi
+
+            if [ ! -f $KRATOS_PATH/.vscode/settings.json ]; then
+                utilities_directory=$(cd `dirname $0` && pwd)
+                echo "-- No default $KRATOS_PATH/.vscode/settings.json found. Copying the templated $utilities_directory/settings.json.orig. file"
+                mkdir -p $KRATOS_PATH/.vscode
+                cp $utilities_directory/settings.json.orig $KRATOS_PATH/.vscode/settings.json
+            fi
+
+            if [ ! -f $KRATOS_PATH/.vscode/tasks.json ]; then
+                utilities_directory=$(cd `dirname $0` && pwd)
+                echo "-- No default $KRATOS_PATH/.vscode/tasks.json found. Copying the templated $utilities_directory/tasks.json.orig. file"
+                mkdir -p $KRATOS_PATH/.vscode
+                cp $utilities_directory/tasks.json.orig $KRATOS_PATH/.vscode/tasks.json
+            fi
+
+
+            export PATH=$KRATOS_BINARY_PATH:$PATH
+            export LD_LIBRARY_PATH=$KRATOS_LIBS_PATH:$LD_LIBRARY_PATH
+            export PYTHONPATH=$KRATOS_BINARY_PATH:$PYTHONPATH
+
+            alias kratos_compile='current_path=$(pwd) && cd $KRATOS_PATH/scripts && unbuffer sh configure.sh 2>&1 | tee kratos.compile.log && cd $current_path || cd $current_path'
+            alias kratos_compile_clean='current_path=$(pwd) && rm -rf $KRATOS_PATH/build/$KRATOS_CPP_CONFIG_NAME $KRATOS_PATH/bin/$KRATOS_CPP_CONFIG_NAME cd $current_path || cd $current_path'
+            alias kratos_paraview_output='python $KRATOS_PATH/applications/HDF5Application/python_scripts/create_xdmf_file.py'
+            alias kratos_unload='export PATH="${PATH//"$KRATOS_BINARY_PATH:"/}" && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH//"$KRATOS_LIBS_PATH:"/}" && export PYTHONPATH="${PYTHONPATH//"$KRATOS_BINARY_PATH:"/}" && unset KRATOS_BUILD_TYPE KRATOS_LIBS_PATH KRATOS_PATH KRATOS_BASE_PATH KRATOS_BINARY_PATH KRATOS_WORKTREE_MASTER_PATH KRATOS_CPP_CONFIG_NAME && unalias kratos_unload kratos_compile kratos_paraview_output kratos_compile_clean'
+
+            echo "Initialized kratos environment at $KRATOS_PATH successfully using $CC compiler with $KRATOS_BUILD_TYPE build type."
+            echo
+            echo "Following commands are available:"
+            echo "            kratos_compile: Compiles currently loaded kratos environment and re-initializes the environment"
+            echo "      kratos_compile_clean: Cleans compiles currently loaded kratos environment and re-initializes the environment"
+            echo "    kratos_paraview_output: Creates xdmf file using the given h5 files for paraview visualization"
+            echo "             kratos_unload: Unloads kratos environment"
         fi
-
-        if [ ! -f $KRATOS_PATH/.vscode/c_cpp_properties.json ]; then
-            utilities_directory=$(cd `dirname $0` && pwd)
-            echo "-- No default $KRATOS_PATH/.vscode/c_cpp_properties.json found. Copying the templated $utilities_directory/c_cpp_properties.json.orig. file"
-            mkdir -p $KRATOS_PATH/.vscode
-            cp $utilities_directory/c_cpp_properties.json.orig $KRATOS_PATH/.vscode/c_cpp_properties.json
-        fi
-
-        if [ ! -f $KRATOS_PATH/.vscode/settings.json ]; then
-            utilities_directory=$(cd `dirname $0` && pwd)
-            echo "-- No default $KRATOS_PATH/.vscode/settings.json found. Copying the templated $utilities_directory/settings.json.orig. file"
-            mkdir -p $KRATOS_PATH/.vscode
-            cp $utilities_directory/settings.json.orig $KRATOS_PATH/.vscode/settings.json
-        fi
-
-        if [ ! -f $KRATOS_PATH/.vscode/tasks.json ]; then
-            utilities_directory=$(cd `dirname $0` && pwd)
-            echo "-- No default $KRATOS_PATH/.vscode/tasks.json found. Copying the templated $utilities_directory/tasks.json.orig. file"
-            mkdir -p $KRATOS_PATH/.vscode
-            cp $utilities_directory/tasks.json.orig $KRATOS_PATH/.vscode/tasks.json
-        fi
-
-
-        export PATH=$KRATOS_BINARY_PATH:$PATH
-        export LD_LIBRARY_PATH=$KRATOS_LIBS_PATH:$LD_LIBRARY_PATH
-        export PYTHONPATH=$KRATOS_BINARY_PATH:$PYTHONPATH
-
-        alias kratos_compile='current_path=$(pwd) && cd $KRATOS_PATH/scripts && unbuffer sh configure.sh 2>&1 | tee kratos.compile.log && cd $current_path || cd $current_path'
-        alias kratos_compile_clean='current_path=$(pwd) && rm -rf $KRATOS_PATH/build/$KRATOS_CPP_CONFIG_NAME $KRATOS_PATH/bin/$KRATOS_CPP_CONFIG_NAME cd $current_path || cd $current_path'
-        alias kratos_paraview_output='python $KRATOS_PATH/applications/HDF5Application/python_scripts/create_xdmf_file.py'
-        alias kratos_unload='export PATH="${PATH//"$KRATOS_BINARY_PATH:"/}" && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH//"$KRATOS_LIBS_PATH:"/}" && export PYTHONPATH="${PYTHONPATH//"$KRATOS_BINARY_PATH:"/}" && unset KRATOS_BUILD_TYPE KRATOS_LIBS_PATH KRATOS_PATH KRATOS_BASE_PATH KRATOS_BINARY_PATH KRATOS_WORKTREE_MASTER_PATH KRATOS_CPP_CONFIG_NAME && unalias kratos_unload kratos_compile kratos_paraview_output kratos_compile_clean'
-
-        echo "Initialized kratos environment at $KRATOS_PATH successfully using $CC compiler with $KRATOS_BUILD_TYPE build type."
-        echo
-        echo "Following commands are available:"
-        echo "            kratos_compile: Compiles currently loaded kratos environment and re-initializes the environment"
-        echo "      kratos_compile_clean: Cleans compiles currently loaded kratos environment and re-initializes the environment"
-        echo "    kratos_paraview_output: Creates xdmf file using the given h5 files for paraview visualization"
-        echo "             kratos_unload: Unloads kratos environment"
     fi
 fi
 
