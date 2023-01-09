@@ -226,6 +226,13 @@ else
                 cp $utilities_directory/launch.json.orig $KRATOS_PATH/.vscode/launch.json
             fi
 
+            if [ ! -f $KRATOS_PATH/.clang-format ]; then
+                utilities_directory=$(cd `dirname $0` && pwd)
+                echo "-- No default $KRATOS_PATH/.clang-format found. Copying the $utilities_directory/.clang-format. file"
+                mkdir -p $KRATOS_PATH/.vscode
+                cp $utilities_directory/.clang-format $KRATOS_PATH/.clang-format
+            fi
+
 
             export PATH=$KRATOS_BINARY_PATH:$PATH
             export LD_LIBRARY_PATH=$KRATOS_LIBS_PATH:$LD_LIBRARY_PATH
