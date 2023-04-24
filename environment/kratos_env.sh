@@ -11,11 +11,12 @@ Help()
     echo
     echo " Syntax: sh kratos_env.sh [options] [environment name] [[compiler] [build_mode] | [branch_name]]"
     echo "options:"
-    echo "          -h, --help  : Displays this help message."
-    echo "          -c, --create: Add a new branch with [branch_name] and create the work tree with [environment name]"
-    echo "          -a, --add   : Add a new work tree with [environment name] for branch with [branch_name]"
-    echo "          -u, --update: Update a  work tree with [environment name]"
-    echo "          -r, --remove: Remove [environment name] worktree."
+    echo "          -h, --help   : Displays this help message."
+    echo "          -s, --summary: Displays summary of work trees."
+    echo "          -c, --create : Add a new branch with [branch_name] and create the work tree with [environment name]"
+    echo "          -a, --add    : Add a new work tree with [environment name] for branch with [branch_name]"
+    echo "          -u, --update : Update a  work tree with [environment name]"
+    echo "          -r, --remove : Remove [environment name] worktree."
     echo "input arguments:"
     echo "            compiler: gcc, clang, intel"
     echo "          build_mode: release, rel_with_deb_info, debug, full_debug"
@@ -68,6 +69,63 @@ Help()
     echo "             kratos_unload: Unloads kratos environment"
 }
 
+GetCompiledApplicationsList()
+{
+    if [ -f "$KRATOS_BASE_PATH/$worktree_name/scripts/configure.sh" ]; then
+        potential_compiled_applications=$(grep "add_app \${KRATOS_APP_DIR}" "$KRATOS_BASE_PATH/$worktree_name/scripts/configure.sh")
+        while IFS= read -r line; do
+            if [[ ${line:0:1} != "#" ]]; then
+                printf "\t                      %s\n" ${line:26}
+            fi
+        done <<< "$potential_compiled_applications"
+    fi
+}
+
+Summary()
+{
+    echo "Details of the available kratos environments:"
+
+    current_path=$(pwd)
+    cd $KRATOS_WORKTREE_MASTER_PATH
+
+    git worktree list --porcelain | while read -r worktree_line
+    do
+        item_0=$(echo $worktree_line | cut -d" " -f1)
+        item_1=$(echo $worktree_line | cut -d" " -f2)
+
+        case $item_0 in
+            "worktree")
+            worktree_name=$(echo $item_1 | rev | cut -d"/" -f1 | rev)
+            ;;
+
+            "branch")
+            worktree_branch=$(echo $item_1)
+            printf "\t-------------------\n"
+            printf "\tEnvironment name  :%s\n" $worktree_name
+            printf "\t            branch:%s\n" ${worktree_branch:11}
+            printf "\t              apps:\n"
+            GetCompiledApplicationsList
+            printf "\t-------------------\n"
+            ;;
+
+            "detached")
+            worktree_branch="detached[$worktree_hash]"
+            printf "\t-------------------\n"
+            printf "\tEnvironment name  :%s\n" $worktree_name
+            printf "\t            branch:%s\n" $worktree_branch
+            printf "\t              apps:\n"
+            GetCompiledApplicationsList
+            printf "\t-------------------\n"
+            ;;
+
+            "HEAD")
+            worktree_hash=$(echo $item_1)
+            ;;
+        esac
+    done
+    cd $current_path
+}
+
 CheckEnvironmentName()
 {
     arr_names=""
@@ -97,6 +155,8 @@ CheckEnvironmentName()
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     Help
+elif [ "$1" = "-s" ] || [ "$1" = "--summary" ]; then
+    Summary
 elif [ "$1" = "-r" ] || [ "$1" = "--remove" ]; then
     environment_name=$2
     CheckEnvironmentName
