@@ -160,36 +160,37 @@ InitalizePythonVirtualEnvironment()
     if [ ! -d $venv_path ]; then
         cur_dir=$(pwd)
         local kratos_libs_path="$venv_path/lib"
-        python -m venv $venv_path
+        virtualenv $venv_path --system-site-packages
         source $PYTHON_VENV_PATH/$venv_name/bin/activate
         site_packages_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
         deactivate
         cd $venv_path/bin
 patch -u -f -F 1 <<EOF
---- activate.orig	2024-03-05 05:10:52.663325443 +0100
-+++ activate	2024-03-05 05:11:00.703325428 +0100
-@@ -13,6 +13,11 @@
+--- activate.orig	2024-03-05 07:54:22.310873289 +0100
++++ activate	2024-03-05 07:55:56.610874522 +0100
+@@ -22,6 +22,11 @@
          export PYTHONHOME
          unset _OLD_VIRTUAL_PYTHONHOME
      fi
-+    if [ -n "\${_OLD_LD_LIBRARY_PATH:-}" ] ; then
-+        LD_LIBRARY_PATH="\${_OLD_LD_LIBRARY_PATH:-}"
-+        export LD_LIBRARY_PATH
++    if ! [ -z "\${_OLD_LD_LIBRARY_PATH+_}" ] ; then
++        LD_LIBRARY_PATH="\$_OLD_LD_LIBRARY_PATH"
++        export PYTHONHOME
 +        unset _OLD_LD_LIBRARY_PATH
 +    fi
 
-     # Call hash to forget past commands. Without forgetting
-     # past commands the \$PATH changes we made may not be respected
-@@ -41,6 +46,9 @@
+     # The hash command must be called to get it to forget past
+     # commands. Without forgetting past commands the \$PATH changes
+@@ -54,6 +59,10 @@
  _OLD_VIRTUAL_PATH="\$PATH"
  PATH="\$VIRTUAL_ENV/bin:\$PATH"
  export PATH
 +_OLD_LD_LIBRARY_PATH="\$LD_LIBRARY_PATH"
++export _OLD_LD_LIBRARY_PATH
 +LD_LIBRARY_PATH="$site_packages_dir/libs:\$LD_LIBRARY_PATH"
 +export LD_LIBRARY_PATH
 
- # unset PYTHONHOME if set
- # this will fail if PYTHONHOME is set to the empty string (which is bad anyway)
+ if [ "x" != x ] ; then
+     VIRTUAL_ENV_PROMPT=""
 EOF
         cd $cur_dir
     fi
