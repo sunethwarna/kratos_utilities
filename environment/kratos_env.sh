@@ -2,6 +2,7 @@
 
 export OMP_NUM_THREADS=30
 export KRATOS_WORKTREE_MASTER_PATH="/software/kratos/master"
+export PYTHON_VENV_PATH="/software/python_venv"
 
 export KRATOS_BASE_PATH=$(dirname $KRATOS_WORKTREE_MASTER_PATH)
 
@@ -65,7 +66,6 @@ Help()
     echo "            kratos_compile: Compiles currently loaded kratos environment and re-initializes the environment"
     echo "      kratos_compile_clean: Cleans and compiles currently loaded kratos environment and re-initializes the environment"
     echo "    kratos_paraview_output: Creates xdmf file using the given h5 files for paraview visualization"
-    echo "    kratos_init_python_env: Initialize existing kratos environment to be used in vscode"
     echo "             kratos_unload: Unloads kratos environment"
 }
 
@@ -151,6 +151,49 @@ CheckEnvironmentName()
         done <<< "$data"
         is_valid_options=false
     fi
+}
+
+InitalizePythonVirtualEnvironment()
+{
+    local venv_name="$1"
+    local venv_path=$PYTHON_VENV_PATH/$venv_name
+    if [ ! -d $venv_path ]; then
+        cur_dir=$(pwd)
+        local kratos_libs_path="$venv_path/lib"
+        python -m venv $venv_path
+        source $PYTHON_VENV_PATH/$venv_name/bin/activate
+        site_packages_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
+        deactivate
+        cd $venv_path/bin
+patch -u -f -F 1 <<EOF
+--- activate.orig	2024-03-05 05:10:52.663325443 +0100
++++ activate	2024-03-05 05:11:00.703325428 +0100
+@@ -13,6 +13,11 @@
+         export PYTHONHOME
+         unset _OLD_VIRTUAL_PYTHONHOME
+     fi
++    if [ -n "\${_OLD_LD_LIBRARY_PATH:-}" ] ; then
++        LD_LIBRARY_PATH="\${_OLD_LD_LIBRARY_PATH:-}"
++        export LD_LIBRARY_PATH
++        unset _OLD_LD_LIBRARY_PATH
++    fi
+
+     # Call hash to forget past commands. Without forgetting
+     # past commands the \$PATH changes we made may not be respected
+@@ -41,6 +46,9 @@
+ _OLD_VIRTUAL_PATH="\$PATH"
+ PATH="\$VIRTUAL_ENV/bin:\$PATH"
+ export PATH
++_OLD_LD_LIBRARY_PATH="\$LD_LIBRARY_PATH"
++LD_LIBRARY_PATH="$site_packages_dir/libs:\$LD_LIBRARY_PATH"
++export LD_LIBRARY_PATH
+
+ # unset PYTHONHOME if set
+ # this will fail if PYTHONHOME is set to the empty string (which is bad anyway)
+EOF
+        cd $cur_dir
+    fi
+    source $PYTHON_VENV_PATH/$venv_name/bin/activate
 }
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
@@ -243,14 +286,14 @@ else
 
     if $is_valid_options
     then
-        if [ ! -z "$KRATOS_PATH" ]; then
-            existing_environment_name=$(echo $KRATOS_PATH | rev | cut -d"/" -f1 | rev)
-            echo "-- Found already existing kratos environment initialization named \"$existing_environment_name\" using $KRATOS_CPP_CONFIG_NAME."
-            echo "-- Please use \"kratos_unload\" to unload existing environment and try again to load the new environment."
+        if [ ! -z "$VIRTUAL_ENV" ]; then
+            echo "-- Found already existing kratos environment initialization."
+            echo "-- Please use \"deactivate\" to deactivate existing environment and try again to load the new environment."
         else
-            export KRATOS_PATH=$KRATOS_BASE_PATH/$environment_name
-            export KRATOS_BINARY_PATH=${KRATOS_PATH}/bin/${compiler_type}_${KRATOS_BUILD_TYPE}
-            export KRATOS_LIBS_PATH=$KRATOS_BINARY_PATH/libs
+            local KRATOS_PATH=$KRATOS_BASE_PATH/$environment_name
+            local KRATOS_BINARY_PATH=${KRATOS_PATH}/bin/${compiler_type}_${KRATOS_BUILD_TYPE}
+            local KRATOS_LIBS_PATH=$KRATOS_BINARY_PATH/libs
+            InitalizePythonVirtualEnvironment ${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}
 
             if [ ! -f $KRATOS_PATH/scripts/configure.sh ]; then
                 utilities_directory=$(cd `dirname $0` && pwd)
@@ -293,16 +336,9 @@ else
                 cp $utilities_directory/.clang-format $KRATOS_PATH/.clang-format
             fi
 
-
-            export PATH=$KRATOS_BINARY_PATH:$PATH
-            export LD_LIBRARY_PATH=$KRATOS_LIBS_PATH:$LD_LIBRARY_PATH
-            export PYTHONPATH=$KRATOS_BINARY_PATH:$PYTHONPATH
-
             alias kratos_compile='current_path=$(pwd) && cd $KRATOS_PATH/scripts && unbuffer sh configure.sh 2>&1 | tee kratos.compile.log && cd $current_path || cd $current_path'
             alias kratos_compile_clean='current_path=$(pwd) && rm -rf $KRATOS_PATH/build/$KRATOS_CPP_CONFIG_NAME $KRATOS_PATH/bin/$KRATOS_CPP_CONFIG_NAME cd $current_path || cd $current_path'
             alias kratos_paraview_output='python $KRATOS_PATH/applications/HDF5Application/python_scripts/create_xdmf_file.py'
-            alias kratos_init_python_env='mkdir -p .vscode && echo "{\"python.analysis.extraPaths\": [\"$KRATOS_BINARY_PATH\"]}" > .vscode/settings.json'
-            alias kratos_unload='export PATH="${PATH//"$KRATOS_BINARY_PATH:"/}" && export LD_LIBRARY_PATH="${LD_LIBRARY_PATH//"$KRATOS_LIBS_PATH:"/}" && export PYTHONPATH="${PYTHONPATH//"$KRATOS_BINARY_PATH:"/}" && unset KRATOS_BUILD_TYPE KRATOS_LIBS_PATH KRATOS_PATH KRATOS_BASE_PATH KRATOS_BINARY_PATH KRATOS_WORKTREE_MASTER_PATH KRATOS_CPP_CONFIG_NAME && unalias kratos_unload kratos_compile kratos_paraview_output kratos_compile_clean kratos_init_python_env'
 
             echo "Initialized kratos environment at $KRATOS_PATH successfully using $CC compiler with $KRATOS_BUILD_TYPE build type."
             echo
@@ -310,8 +346,7 @@ else
             echo "            kratos_compile: Compiles currently loaded kratos environment and re-initializes the environment"
             echo "      kratos_compile_clean: Cleans compiles currently loaded kratos environment and re-initializes the environment"
             echo "    kratos_paraview_output: Creates xdmf file using the given h5 files for paraview visualization"
-            echo "    kratos_init_python_env: Initialize existing kratos environment to be used in vscode"
-            echo "             kratos_unload: Unloads kratos environment"
+            echo "                deactivate: Unloads kratos environment"
         fi
     fi
 fi
