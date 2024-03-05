@@ -12,6 +12,13 @@
 
 source /opt/intel/oneapi/setvars.sh intel64
 
+# activate python environment
+current_dir=$(pwd)
+kratos_env_name=$(pwd | rev | cut -d"/" -f1 | rev)
+kratos_venv_path="/software/python_venv/${kratos_env_name}_${KRATOS_CPP_CONFIG_NAME}"
+source $kratos_venv_path/bin/activate
+kratos_install_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
+
 # Function to add apps
 add_app () {
     export KRATOS_APPLICATIONS="${KRATOS_APPLICATIONS}$1;"
@@ -69,18 +76,21 @@ rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/cmake_install.cmake"
 rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/CMakeCache.txt"
 rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/CMakeFiles"
 
+
+
 # Configure
 cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"   \
--DCMAKE_INSTALL_PREFIX="${KRATOS_SOURCE}/bin/${KRATOS_CPP_CONFIG_NAME}"    \
+-DCMAKE_INSTALL_PREFIX="${kratos_install_dir}"                             \
 -DCMAKE_EXPORT_COMPILE_COMMANDS=ON                                         \
 -DUSE_MPI=ON                                                               \
 -DUSE_EIGEN_MKL=ON                                                         \
 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                                       \
 -DKRATOS_GENERATE_PYTHON_STUBS=ON                                          \
-# -DUSE_COTIRE=ON \
 
 # Buid
 cmake --build "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}" --target install -j10
+
+deactivate
 
 # set .vscode python path correctly
 ${PYTHON_EXECUTABLE} -c """
@@ -92,11 +102,8 @@ if Path('.vscode/settings.json').is_file():
         data = json.loads(file_input.read())
 else:
     data = {}
-data['python.analysis.extraPaths'] = ['./bin/${KRATOS_CPP_CONFIG_NAME}']
+data['python.analysis.extraPaths'] = ['$kratos_install_dir']
 with open('.vscode/settings.json', 'w') as file_output:
     file_output.write(json.dumps(data, indent=4))
 print('--- VSCode python paths set correctly.')
 """
-
-# cmake --build "${KRATOS_BUILD}/${KRATOS_BUILD_TYPE}" --target all_unity -- -j8 && \
-# cmake --build "${KRATOS_BUILD}/${KRATOS_BUILD_TYPE}" --target install/fast -- -j8
