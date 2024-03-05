@@ -15,6 +15,9 @@ source /opt/intel/oneapi/setvars.sh intel64
 # activate python environment
 current_dir=$(pwd)
 kratos_env_name=$(pwd | rev | cut -d"/" -f1 | rev)
+if [ "$kratos_env_name" = "scripts" ]; then
+    kratos_env_name=$(pwd | rev | cut -d"/" -f2 | rev)
+fi
 kratos_venv_path="/software/python_venv/${kratos_env_name}_${KRATOS_CPP_CONFIG_NAME}"
 source $kratos_venv_path/bin/activate
 kratos_install_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
