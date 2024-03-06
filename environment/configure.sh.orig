@@ -12,24 +12,19 @@
 
 source /opt/intel/oneapi/setvars.sh intel64
 
-# activate python environment
-current_dir=$(pwd)
-kratos_env_name=$(pwd | rev | cut -d"/" -f1 | rev)
-if [ "$kratos_env_name" = "scripts" ]; then
-    kratos_env_name=$(pwd | rev | cut -d"/" -f2 | rev)
-fi
-kratos_venv_path="/software/python_venv/${kratos_env_name}_${KRATOS_CPP_CONFIG_NAME}"
-source $kratos_venv_path/bin/activate
-kratos_install_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
-
 # Function to add apps
 add_app () {
     export KRATOS_APPLICATIONS="${KRATOS_APPLICATIONS}$1;"
 }
 
+# assumes the python environment is activated.
+kratos_install_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
+python_venv_name=$(which python | rev | cut -d"/" -f 3 | rev)
+
 # Set compiler
-export compiler_type=$(echo $KRATOS_CPP_CONFIG_NAME | cut -d"_" -f1)
-export KRATOS_BUILD_TYPE=$(echo $KRATOS_CPP_CONFIG_NAME | cut -d"_" -f2)
+export compiler_type=$(echo $python_venv_name | cut -d"_" -f2)
+export KRATOS_BUILD_TYPE=$(echo $python_venv_name | cut -d"_" -f3)
+export KRATOS_CPP_CONFIG_NAME="${compiler_type}_${KRATOS_BUILD_TYPE}"
 
 case $compiler_type in
     "gcc")
@@ -45,13 +40,15 @@ case $compiler_type in
         export CXX=icpx
         ;;
     *)
-        echo "-- Unsupported compiler type provided in environment variable KRATOS_CPP_CONFIG_NAME. [ KRATOS_CPP_CONFIG_NAME = \"$KRATOS_CPP_CONFIG_NAME\" ]. Followings are the accepted compiler types:"
+        echo "-- Unsupported compiler type provided in environment variable KRATOS_CPP_CONFIG_NAME. [ python_venv_name = \"$python_venv_name\" ]. Followings are the accepted compiler types:"
         printf "\tgcc\n"
         printf "\tclang\n"
         printf "\tintel\n"
         exit
         ;;
 esac
+
+echo "===== Compiling kratos using \"$compiler_type\" in \"$KRATOS_BUILD_TYPE\" with \"$python_venv_name\" python environemnt"
 
 # Set variables
 export KRATOS_SOURCE="${KRATOS_SOURCE:-"$( cd "$(dirname "$0")" ; pwd -P )"/..}"
@@ -65,21 +62,20 @@ export PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE:-"python"}
 
 # Set applications to compile
 export KRATOS_APPLICATIONS=
-add_app ${KRATOS_APP_DIR}/FluidDynamicsApplication
 add_app ${KRATOS_APP_DIR}/HDF5Application
 add_app ${KRATOS_APP_DIR}/MetisApplication
 add_app ${KRATOS_APP_DIR}/TrilinosApplication
-add_app ${KRATOS_APP_DIR}/RANSApplication
 add_app ${KRATOS_APP_DIR}/LinearSolversApplication
-add_app ${KRATOS_APP_DIR}/StatisticsApplication
+add_app ${KRATOS_APP_DIR}/StructuralMechanicsApplication
+add_app ${KRATOS_APP_DIR}/ShapeOptimizationApplication
+add_app ${KRATOS_APP_DIR}/OptimizationApplication
+add_app ${KRATOS_APP_DIR}/MeshMovingApplication
 
 # Clean
 clear
 rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/cmake_install.cmake"
 rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/CMakeCache.txt"
 rm -rf "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/CMakeFiles"
-
-
 
 # Configure
 cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"   \
@@ -93,20 +89,4 @@ cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"   \
 # Buid
 cmake --build "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}" --target install -j10
 
-deactivate
-
-# set .vscode python path correctly
-${PYTHON_EXECUTABLE} -c """
-import json
-from pathlib import Path
-Path('.vscode').mkdir(parents=True, exist_ok=True)
-if Path('.vscode/settings.json').is_file():
-    with open('.vscode/settings.json', 'r') as file_input:
-        data = json.loads(file_input.read())
-else:
-    data = {}
-data['python.analysis.extraPaths'] = ['$kratos_install_dir']
-with open('.vscode/settings.json', 'w') as file_output:
-    file_output.write(json.dumps(data, indent=4))
-print('--- VSCode python paths set correctly.')
-"""
+ln -sf ${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/compile_commands.json ${KRATOS_BUILD}/compile_commands.json

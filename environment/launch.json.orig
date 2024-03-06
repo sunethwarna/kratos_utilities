@@ -8,7 +8,7 @@
             "name": "(gdb) Custom Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "/usr/bin/python",
+            "program": "python",
             "args": [
                 "${input:PythonFile}"
             ],
@@ -18,14 +18,6 @@
                 {
                     "name": "OMP_NUM_THREADS",
                     "value": "1"
-                },
-                {
-                    "name": "LD_LIBRARY_PATH",
-                    "value": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}/libs",
-                },
-                {
-                    "name": "PYTHONPATH",
-                    "value": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}"
                 }
             ],
             "externalConsole": false,

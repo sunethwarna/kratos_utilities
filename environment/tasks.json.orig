@@ -36,11 +36,7 @@
                     }
                 ]
             },
-            "options": {
-                "env": {
-                    "KRATOS_CPP_CONFIG_NAME": "${command:cpptools.activeConfigName}"
-                }
-            },
+            "options": {},
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -61,9 +57,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "OMP_NUM_THREADS": "30",
-                    "LD_LIBRARY_PATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}/libs",
-                    "PYTHONPATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}"
+                    "OMP_NUM_THREADS": "30"
                 }
             },
             "group": "test",
@@ -83,10 +77,7 @@
             ],
             "options": {
                 "cwd": "${fileDirname}",
-                "env": {
-                    "LD_LIBRARY_PATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}/libs",
-                    "PYTHONPATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}"
-                }
+                "env": {}
             },
             "group": "test",
             "presentation": {
@@ -107,10 +98,7 @@
             ],
             "options": {
                 "cwd": "${fileDirname}",
-                "env": {
-                    "LD_LIBRARY_PATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}/libs",
-                    "PYTHONPATH": "${workspaceFolder}/bin/${command:cpptools.activeConfigName}"
-                }
+                "env": {}
             },
             "group": "test",
             "presentation": {
