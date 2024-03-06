@@ -21,6 +21,13 @@ add_app () {
 kratos_install_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
 python_venv_name=$(which python | rev | cut -d"/" -f 3 | rev)
 
+current_kratos_name=$(dirname "$0" | rev | cut -d"/" -f2 | rev)
+current_kratos_name_from_venv=$(echo $python_venv_name | cut -d"_" -f1)
+if [ ! "${current_kratos_name}" = "${current_kratos_name_from_venv}" ]; then
+    echo "Mismatching kratos ($current_kratos_name) and python env($python_venv_name) name."
+    exit
+fi
+
 # Set compiler
 export compiler_type=$(echo $python_venv_name | cut -d"_" -f2)
 export KRATOS_BUILD_TYPE=$(echo $python_venv_name | cut -d"_" -f3)
