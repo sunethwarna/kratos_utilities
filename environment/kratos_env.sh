@@ -3,6 +3,7 @@
 export OMP_NUM_THREADS=30
 export KRATOS_WORKTREE_MASTER_PATH="/software/kratos/master"
 export PYTHON_VENV_PATH="/software/python_venv"
+utilities_directory="/software/kratos/kratos_utilities/environment"
 
 export KRATOS_BASE_PATH=$(dirname $KRATOS_WORKTREE_MASTER_PATH)
 
@@ -155,44 +156,16 @@ CheckEnvironmentName()
 
 InitalizePythonVirtualEnvironment()
 {
-    local venv_name="$1"
-    local venv_path=$PYTHON_VENV_PATH/$venv_name
+    venv_name="$1"
+    venv_path=$PYTHON_VENV_PATH/$venv_name
     if [ ! -d $venv_path ]; then
         cur_dir=$(pwd)
-        local kratos_libs_path="$venv_path/lib"
+        kratos_libs_path="$venv_path/lib"
         virtualenv $venv_path --system-site-packages
         source $PYTHON_VENV_PATH/$venv_name/bin/activate
         site_packages_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
         deactivate
-        cd $venv_path/bin
-patch -u -f -F 1 <<EOF
---- activate.orig	2024-03-05 07:54:22.310873289 +0100
-+++ activate	2024-03-05 07:55:56.610874522 +0100
-@@ -22,6 +22,11 @@
-         export PYTHONHOME
-         unset _OLD_VIRTUAL_PYTHONHOME
-     fi
-+    if ! [ -z "\${_OLD_LD_LIBRARY_PATH+_}" ] ; then
-+        LD_LIBRARY_PATH="\$_OLD_LD_LIBRARY_PATH"
-+        export PYTHONHOME
-+        unset _OLD_LD_LIBRARY_PATH
-+    fi
-
-     # The hash command must be called to get it to forget past
-     # commands. Without forgetting past commands the \$PATH changes
-@@ -54,6 +59,10 @@
- _OLD_VIRTUAL_PATH="\$PATH"
- PATH="\$VIRTUAL_ENV/bin:\$PATH"
- export PATH
-+_OLD_LD_LIBRARY_PATH="\$LD_LIBRARY_PATH"
-+export _OLD_LD_LIBRARY_PATH
-+LD_LIBRARY_PATH="$site_packages_dir/libs:\$LD_LIBRARY_PATH"
-+export LD_LIBRARY_PATH
-
- if [ "x" != x ] ; then
-     VIRTUAL_ENV_PROMPT=""
-EOF
-        cd $cur_dir
+        echo "export LD_LIBRARY_PATH=$site_packages_dir/libs:\$LD_LIBRARY_PATH" >> $venv_path/bin/activate
     fi
     source $PYTHON_VENV_PATH/$venv_name/bin/activate
 }
@@ -291,47 +264,42 @@ else
             echo "-- Found already existing kratos environment initialization."
             echo "-- Please use \"deactivate\" to deactivate existing environment and try again to load the new environment."
         else
-            local KRATOS_PATH=$KRATOS_BASE_PATH/$environment_name
-            local KRATOS_BINARY_PATH=${KRATOS_PATH}/bin/${compiler_type}_${KRATOS_BUILD_TYPE}
-            local KRATOS_LIBS_PATH=$KRATOS_BINARY_PATH/libs
+            KRATOS_PATH=$KRATOS_BASE_PATH/$environment_name
+            KRATOS_BINARY_PATH=${KRATOS_PATH}/bin/${compiler_type}_${KRATOS_BUILD_TYPE}
+            KRATOS_LIBS_PATH=$KRATOS_BINARY_PATH/libs
             InitalizePythonVirtualEnvironment ${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}
 
             if [ ! -f $KRATOS_PATH/scripts/configure.sh ]; then
-                utilities_directory=$(cd `dirname $0` && pwd)
                 echo "-- No default $KRATOS_PATH/scripts/configure.sh found. Copying the templated $utilities_directory/configure.sh.orig. file"
                 cp $utilities_directory/configure.sh.orig $KRATOS_PATH/scripts/configure.sh
+                sed -i "s/<KRATOS_NAME>/$environment_name/g" $KRATOS_PATH/scripts/configure.sh
             fi
 
             if [ ! -f $KRATOS_PATH/.vscode/c_cpp_properties.json ]; then
-                utilities_directory=$(cd `dirname $0` && pwd)
                 echo "-- No default $KRATOS_PATH/.vscode/c_cpp_properties.json found. Copying the templated $utilities_directory/c_cpp_properties.json.orig. file"
                 mkdir -p $KRATOS_PATH/.vscode
                 cp $utilities_directory/c_cpp_properties.json.orig $KRATOS_PATH/.vscode/c_cpp_properties.json
             fi
 
             if [ ! -f $KRATOS_PATH/.vscode/settings.json ]; then
-                utilities_directory=$(cd `dirname $0` && pwd)
                 echo "-- No default $KRATOS_PATH/.vscode/settings.json found. Copying the templated $utilities_directory/settings.json.orig. file"
                 mkdir -p $KRATOS_PATH/.vscode
                 cp $utilities_directory/settings.json.orig $KRATOS_PATH/.vscode/settings.json
             fi
 
             if [ ! -f $KRATOS_PATH/.vscode/tasks.json ]; then
-                utilities_directory=$(cd `dirname $0` && pwd)
                 echo "-- No default $KRATOS_PATH/.vscode/tasks.json found. Copying the templated $utilities_directory/tasks.json.orig. file"
                 mkdir -p $KRATOS_PATH/.vscode
                 cp $utilities_directory/tasks.json.orig $KRATOS_PATH/.vscode/tasks.json
             fi
 
             if [ ! -f $KRATOS_PATH/.vscode/launch.json ]; then
-                utilities_directory=$(cd `dirname $0` && pwd)
                 echo "-- No default $KRATOS_PATH/.vscode/launch.json found. Copying the templated $utilities_directory/launch.json.orig. file"
                 mkdir -p $KRATOS_PATH/.vscode
                 cp $utilities_directory/launch.json.orig $KRATOS_PATH/.vscode/launch.json
             fi
 
             if [ ! -f $KRATOS_PATH/.clang-format ]; then
-                utilities_directory=$(cd `dirname $0` && pwd)
                 echo "-- No default $KRATOS_PATH/.clang-format found. Copying the $utilities_directory/.clang-format. file"
                 mkdir -p $KRATOS_PATH/.vscode
                 cp $utilities_directory/.clang-format $KRATOS_PATH/.clang-format
