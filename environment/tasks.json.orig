@@ -7,7 +7,7 @@
             "label": "Build",
             "type": "shell",
             "linux": {
-                "command": "sh",
+                "command": "bash",
                 "args": [
                     "${workspaceFolder}/scripts/configure.sh"
                 ],
