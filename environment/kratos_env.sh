@@ -145,7 +145,7 @@ CheckEnvironmentName()
 
     is_valid_options=true
     if [ -z $temp_environment_name ]; then
-        echo "-- Unsupported environment name. Followings are the valid environment names: (use -h or --help to see full details)"
+        echo "-- Unsupported environment name=\"$environment_name\". Followings are the valid environment names: (use -h or --help to see full details)"
         while IFS= read -r data_item; do
             name=$(echo $data_item | rev | cut -d"/" -f1 | rev)
             printf "\t%s \n" $name
@@ -154,18 +154,73 @@ CheckEnvironmentName()
     fi
 }
 
+ConfigureVariables()
+{
+    case $compiler_type in
+        "gcc")
+            ;;
+        "clang")
+            ;;
+        "intel")
+            ;;
+        *)
+            echo "-- Unsupported compiler type=\"$compiler_type\" provided. Followings are the valid compiler types: (use -h or --help to see full details)"
+            printf "\tgcc\n"
+            printf "\tclang\n"
+            printf "\tintel\n"
+            is_valid_options=false
+            ;;
+    esac
+
+    case $build_type in
+        "release")
+            export KRATOS_BUILD_TYPE="Release"
+            ;;
+        "rel_with_deb_info")
+            export KRATOS_BUILD_TYPE="RelWithDebInfo"
+            ;;
+        "debug")
+            export KRATOS_BUILD_TYPE="Debug"
+            ;;
+        "full_debug")
+            export KRATOS_BUILD_TYPE="FullDebug"
+            ;;
+        *)
+            echo "-- Unsupported build type=\"$build_type\" provided. Followings are the valid build types: (use -h or --help to see full details)"
+            printf "\trelease\n"
+            printf "\trel_with_deb_info\n"
+            printf "\tdebug\n"
+            printf "\tfull_debug\n"
+            is_valid_options=false
+            ;;
+    esac
+
+    export KRATOS_CPP_CONFIG_NAME=$(echo "${compiler_type}_${KRATOS_BUILD_TYPE}")
+}
+
+ReInitializeVirtualEnvironment()
+{
+    venv_name="$1"
+    venv_path=$PYTHON_VENV_PATH/$venv_name
+    if [ -d $venv_path ]; then
+        rm -r $venv_path
+    fi
+
+    cur_dir=$(pwd)
+    kratos_libs_path="$venv_path/lib"
+    virtualenv $venv_path --system-site-packages
+    source $PYTHON_VENV_PATH/$venv_name/bin/activate
+    site_packages_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
+    deactivate
+    echo "export LD_LIBRARY_PATH=$site_packages_dir/libs:\$LD_LIBRARY_PATH" >> $venv_path/bin/activate
+}
+
 InitalizePythonVirtualEnvironment()
 {
     venv_name="$1"
     venv_path=$PYTHON_VENV_PATH/$venv_name
     if [ ! -d $venv_path ]; then
-        cur_dir=$(pwd)
-        kratos_libs_path="$venv_path/lib"
-        virtualenv $venv_path --system-site-packages
-        source $PYTHON_VENV_PATH/$venv_name/bin/activate
-        site_packages_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
-        deactivate
-        echo "export LD_LIBRARY_PATH=$site_packages_dir/libs:\$LD_LIBRARY_PATH" >> $venv_path/bin/activate
+        ReInitializeVirtualEnvironment $venv_name
     fi
     source $PYTHON_VENV_PATH/$venv_name/bin/activate
 }
@@ -202,13 +257,16 @@ elif [ "$1" = "-a" ] || [ "$1" = "--add" ]; then
     cd $current_path
 elif [ "$1" = "-u" ] || [ "$1" = "--update" ]; then
     environment_name=$2
+    compiler_type=$3
+    build_type=$4
+
     CheckEnvironmentName
+
+    ConfigureVariables
+
     if $is_valid_options
     then
-        current_path=$(pwd)
-        cd $KRATOS_WORKTREE_MASTER_PATH/../$environment_name
-        git pull
-        cd $current_path
+        ReInitializeVirtualEnvironment ${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}
     fi
 else
     environment_name=$1
@@ -217,46 +275,7 @@ else
 
     CheckEnvironmentName
 
-    case $compiler_type in
-        "gcc")
-            ;;
-        "clang")
-            ;;
-        "intel")
-            ;;
-        *)
-            echo "-- Unsupported compiler type provided. Followings are the valid compiler types: (use -h or --help to see full details)"
-            printf "\tgcc\n"
-            printf "\tclang\n"
-            printf "\tintel\n"
-            is_valid_options=false
-            ;;
-    esac
-
-    case $build_type in
-        "release")
-            export KRATOS_BUILD_TYPE="Release"
-            ;;
-        "rel_with_deb_info")
-            export KRATOS_BUILD_TYPE="RelWithDebInfo"
-            ;;
-        "debug")
-            export KRATOS_BUILD_TYPE="Debug"
-            ;;
-        "full_debug")
-            export KRATOS_BUILD_TYPE="FullDebug"
-            ;;
-        *)
-            echo "-- Unsupported build type provided. Followings are the valid build types: (use -h or --help to see full details)"
-            printf "\trelease\n"
-            printf "\trel_with_deb_info\n"
-            printf "\tdebug\n"
-            printf "\tfull_debug\n"
-            is_valid_options=false
-            ;;
-    esac
-
-    export KRATOS_CPP_CONFIG_NAME=$(echo "${compiler_type}_${KRATOS_BUILD_TYPE}")
+    ConfigureVariables
 
     if $is_valid_options
     then
@@ -297,6 +316,12 @@ else
                 echo "-- No default $KRATOS_PATH/.vscode/launch.json found. Copying the templated $utilities_directory/launch.json.orig. file"
                 mkdir -p $KRATOS_PATH/.vscode
                 cp $utilities_directory/launch.json.orig $KRATOS_PATH/.vscode/launch.json
+            fi
+
+            if [ ! -f $KRATOS_PATH/.vscode/cpp_test.py ]; then
+                echo "-- No default $KRATOS_PATH/.vscode/cpp_test.py found. Copying the templated $utilities_directory/cpp_test.py file"
+                mkdir -p $KRATOS_PATH/.vscode
+                cp $utilities_directory/cpp_test.py $KRATOS_PATH/.vscode/cpp_test.py
             fi
 
             if [ ! -f $KRATOS_PATH/.clang-format ]; then
