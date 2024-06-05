@@ -8,12 +8,40 @@
             "name": "(gdb) Custom Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "python",
+            "program": "${command:python.interpreterPath}",
             "args": [
                 "${input:PythonFile}"
             ],
             "stopAtEntry": false,
             "cwd": "${input:WorkingPath}",
+            "environment": [
+                {
+                    "name": "OMP_NUM_THREADS",
+                    "value": "1"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "(gdb) cpp Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${command:python.interpreterPath}",
+            "args": [
+                "${workspaceFolder}/.vscode/cpp_test.py",
+                "${input:Application}",
+                "${input:TestNamePattern}"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
             "environment": [
                 {
                     "name": "OMP_NUM_THREADS",
@@ -49,6 +77,32 @@
             "args": {
                 "id": "PythonFile",
                 "description": "Python file to be executed in the working path for debugging.",
+                "default": ""
+            }
+        },
+        {
+            "id": "Application",
+            "type": "command",
+            "command": "memento.pickString",
+            "args": {
+                "id": "Application",
+                "description": "Application to be used",
+                "options": [
+                    "FluidDynamicsApplication",
+                    "HDF5Application",
+                    "RANSApplication",
+                    "None"
+                ],
+                "default": "FluidDynamicsApplication"
+            }
+        },
+        {
+            "id": "TestNamePattern",
+            "type": "command",
+            "command": "memento.promptString",
+            "args": {
+                "id": "TestNamePattern",
+                "description": "Test name pattern without \"*\"",
                 "default": ""
             }
         }

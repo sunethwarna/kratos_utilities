@@ -7,7 +7,7 @@
             "label": "Build",
             "type": "shell",
             "linux": {
-                "command": "bash",
+                "command": "sh",
                 "args": [
                     "${workspaceFolder}/scripts/configure.sh"
                 ],
@@ -72,8 +72,9 @@
                 "command": "python"
             },
             "args": [
-                "-c",
-                "from importlib import import_module\nimport KratosMultiphysics as Kratos\nif \"${input:Application}\" != \"None\": import_module(\"KratosMultiphysics.${input:Application}\")\nKratos.Tester.SetVerbosity(Kratos.Tester.Verbosity.TESTS_OUTPUTS)\nKratos.Tester.RunTestCases(\"*${input:TestNamePattern}*\")"
+                "${workspaceFolder}/.vscode/cpp_test.py",
+                "${input:Application}",
+                "${input:TestNamePattern}"
             ],
             "options": {
                 "cwd": "${fileDirname}",
@@ -117,7 +118,8 @@
                 "options": [
                     "FluidDynamicsApplication",
                     "HDF5Application",
-                    "RANSApplication"
+                    "RANSApplication",
+                    "None"
                 ],
                 "default": "FluidDynamicsApplication"
             }
