@@ -68,6 +68,13 @@ Help()
     echo "      kratos_compile_clean: Cleans and compiles currently loaded kratos environment and re-initializes the environment"
     echo "    kratos_paraview_output: Creates xdmf file using the given h5 files for paraview visualization"
     echo "             kratos_unload: Unloads kratos environment"
+
+    if ! command -v virtualenv 2>&1 >/dev/null
+    then
+        echo "--------------------------------------------------------------------------------------------------------"
+        echo "${bold}Warning: virtualenv could not be found. Install python-virtualenv or virtualenv packages.${normal}"
+        echo "--------------------------------------------------------------------------------------------------------"
+    fi
 }
 
 GetCompiledApplicationsList()
@@ -200,6 +207,12 @@ ConfigureVariables()
 
 ReInitializeVirtualEnvironment()
 {
+    if ! command -v virtualenv 2>&1 >/dev/null
+    then
+        echo "virtualenv could not be found. Install python-virtualenv or virtualenv packages."
+        exit 1
+    fi
+
     venv_name="$1"
     venv_path=$PYTHON_VENV_PATH/$venv_name
     if [ -d $venv_path ]; then
