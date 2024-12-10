@@ -97,4 +97,6 @@ cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"   \
 cmake --build "${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}" --target install -j10
 
 ln -sf ${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}/compile_commands.json ${KRATOS_BUILD}/compile_commands.json
+rm ${KRATOS_BUILD}/test
+echo "-- Linking ${kratos_install_dir}/test with ${KRATOS_BUILD}/test"
 ln -sf ${kratos_install_dir}/test ${KRATOS_BUILD}/test
