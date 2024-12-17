@@ -3,7 +3,7 @@
 export OMP_NUM_THREADS=30
 export KRATOS_WORKTREE_MASTER_PATH="/software/kratos/master"
 export PYTHON_VENV_PATH="/software/python_venv"
-utilities_directory="/software/kratos/kratos_utilities/environment"
+utilities_directory="/software/kratos/utilities/environment"
 
 export KRATOS_BASE_PATH=$(dirname $KRATOS_WORKTREE_MASTER_PATH)
 
@@ -339,8 +339,12 @@ else
 
             if [ ! -f $KRATOS_PATH/.clang-format ]; then
                 echo "-- No default $KRATOS_PATH/.clang-format found. Copying the $utilities_directory/.clang-format. file"
-                mkdir -p $KRATOS_PATH/.vscode
                 cp $utilities_directory/.clang-format $KRATOS_PATH/.clang-format
+            fi
+
+            if [ ! -f $KRATOS_PATH/.clangd ]; then
+                echo "-- No default $KRATOS_PATH/.clangd found. Copying the $utilities_directory/.clangd file"
+                cp $utilities_directory/.clangd $KRATOS_PATH/.clangd
             fi
 
             alias kratos_compile='current_path=$(pwd) && cd $KRATOS_PATH/scripts && unbuffer sh configure.sh 2>&1 | tee kratos.compile.log && cd $current_path || cd $current_path'
