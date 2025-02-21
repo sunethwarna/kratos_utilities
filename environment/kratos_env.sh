@@ -4,6 +4,7 @@ export OMP_NUM_THREADS=30
 export KRATOS_WORKTREE_MASTER_PATH="/software/kratos/master"
 export PYTHON_VENV_PATH="/software/python_venv"
 utilities_directory="/software/kratos/utilities/environment"
+compile_configuration_file="configure_lrz.sh.orig"
 
 export KRATOS_BASE_PATH=$(dirname $KRATOS_WORKTREE_MASTER_PATH)
 
@@ -302,8 +303,8 @@ else
             InitalizePythonVirtualEnvironment ${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}
 
             if [ ! -f $KRATOS_PATH/scripts/configure.sh ]; then
-                echo "-- No default $KRATOS_PATH/scripts/configure.sh found. Copying the templated $utilities_directory/configure.sh.orig. file"
-                cp $utilities_directory/configure.sh.orig $KRATOS_PATH/scripts/configure.sh
+                echo "-- No default $KRATOS_PATH/scripts/configure.sh found. Copying the templated $utilities_directory/$compile_configuration_file. file"
+                cp $utilities_directory/$compile_configuration_file $KRATOS_PATH/scripts/configure.sh
                 sed -i "s/<KRATOS_NAME>/$environment_name/g" $KRATOS_PATH/scripts/configure.sh
             fi
 
