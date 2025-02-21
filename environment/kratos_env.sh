@@ -4,7 +4,7 @@ export OMP_NUM_THREADS=30
 export KRATOS_WORKTREE_MASTER_PATH="/software/kratos/master"
 export PYTHON_VENV_PATH="/software/python_venv"
 utilities_directory="/software/kratos/utilities/environment"
-compile_configuration_file="configure_lrz.sh.orig"
+compile_configuration_file="configure.sh.orig"
 
 export KRATOS_BASE_PATH=$(dirname $KRATOS_WORKTREE_MASTER_PATH)
 
