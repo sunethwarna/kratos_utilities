@@ -128,13 +128,13 @@ class GraphSettings:
 
 if __name__ == "__main__":
     gs = GraphSettings(13, pre_defined_marker_style="o", pre_defined_color="r")
-    import numpy
+    # import numpy
 
-    x = numpy.arange(-1, 1, 0.1)
-    for i in range(13):
-        plt.plot(x, x+i, **gs.GetGraphParameters(), label=f"{i}")
-    plt.legend(loc="upper right")
-    plt.show()
+    # x = numpy.arange(-1, 1, 0.1)
+    # for i in range(13):
+    #     plt.plot(x, x+i, **gs.GetGraphParameters(), label=f"{i}")
+    # plt.legend(loc="upper right")
+    # plt.show()
 
     # test_string = "lccmml"
     # print(GraphSettings._GetOrderedList(test_string))
