@@ -1,12 +1,6 @@
-#!/bin/zsh
+#!/bin/bash
 
-export OMP_NUM_THREADS=30
-export KRATOS_WORKTREE_MASTER_PATH="/software/kratos/master"
-export PYTHON_VENV_PATH="/software/python_venv"
-utilities_directory="/software/kratos/utilities/environment"
-compile_configuration_file="configure.sh.orig"
-
-export KRATOS_BASE_PATH=$(dirname $KRATOS_WORKTREE_MASTER_PATH)
+KRATOS_ENV_SCRIPT_DIR=$(dirname $0)
 
 Help()
 {
@@ -24,6 +18,14 @@ Help()
     echo "            compiler: gcc, clang, intel"
     echo "          build_mode: release, rel_with_deb_info, debug, full_debug"
     echo "    environment name: please see the below worktree information for available environment names"
+    echo
+
+    echo "Path information:"
+    echo "      Kratos work tree master path       : $KRATOS_WORKTREE_MASTER_PATH"
+    echo "      Python environment path            : $PYTHON_VENV_PATH"
+    echo "      Kratos utilities path              : $KRATOS_ENV_SCRIPT_DIR"
+    echo "      Kratos default configuration script: $KRATOS_CONFIGURATION_SCRIPT"
+    echo "      Python environment configuration   : $PYTHON_VENV_EXECUTABLE"
     echo
 
     current_path=$(pwd)
@@ -76,6 +78,64 @@ Help()
         echo "${bold}Warning: virtualenv could not be found. Install python-virtualenv or virtualenv packages.${normal}"
         echo "--------------------------------------------------------------------------------------------------------"
     fi
+}
+
+CheckAndInitializeEnvironmentVariables()
+{
+    if [ ! -z "$BASH_VERSION" ]; then
+        prompt_prefix="-p "
+        shell_type="bash"
+    elif [ ! -z "$ZSH_VERSION" ]; then
+        prompt_prefix="?"
+        shell_type="zsh"
+    else
+        echo "Unsupported shell. Only supports bash and zsh [ shell = $BASH_VERSION ]"
+    fi
+    # first check whether the source files exists with already set paths
+    if [ ! -f $KRATOS_ENV_SCRIPT_DIR/kratos_environment_paths.sh ]; then
+        DEFAULT_KRATOS_WORKTREE_MASTER_PATH="/software/kratos/master"
+        read "${prompt_prefix}Specify the kratos master path ($DEFAULT_KRATOS_WORKTREE_MASTER_PATH): " KRATOS_WORKTREE_MASTER_PATH
+        if [ -z $KRATOS_WORKTREE_MASTER_PATH ]; then
+            KRATOS_WORKTREE_MASTER_PATH=$DEFAULT_KRATOS_WORKTREE_MASTER_PATH
+            echo "--- Using default KRATOS_WORKTREE_MASTER_PATH = $KRATOS_WORKTREE_MASTER_PATH."
+        else
+            echo "--- Changed KRATOS_WORKTREE_MASTER_PATH to $KRATOS_WORKTREE_MASTER_PATH."
+        fi
+
+        DEFAULT_PYTHON_VENV_PATH="/software/python_venv"
+        read "${prompt_prefix}Specify the kratos master path ($DEFAULT_PYTHON_VENV_PATH): " PYTHON_VENV_PATH
+        if [ -z $PYTHON_VENV_PATH ]; then
+            PYTHON_VENV_PATH=$DEFAULT_PYTHON_VENV_PATH
+            echo "--- Using default PYTHON_VENV_PATH = $PYTHON_VENV_PATH."
+        else
+            echo "--- Changed PYTHON_VENV_PATH to $PYTHON_VENV_PATH."
+        fi
+
+        DEFAULT_KRATOS_CONFIGURATION_SCRIPT="configure.sh"
+        read "${prompt_prefix}Specify the kratos default configuration script name ($DEFAULT_KRATOS_CONFIGURATION_SCRIPT): " KRATOS_CONFIGURATION_SCRIPT
+        if [ -z $KRATOS_CONFIGURATION_SCRIPT ]; then
+            KRATOS_CONFIGURATION_SCRIPT=$DEFAULT_KRATOS_CONFIGURATION_SCRIPT
+            echo "--- Using default KRATOS_CONFIGURATION_SCRIPT = $KRATOS_CONFIGURATION_SCRIPT."
+        else
+            echo "--- Changed KRATOS_CONFIGURATION_SCRIPT to $KRATOS_CONFIGURATION_SCRIPT."
+        fi
+
+        DEFAULT_PYTHON_VENV_EXECUTABLE="virtualenv"
+        read "${prompt_prefix}Specify the default python environment configuration method ($DEFAULT_PYTHON_VENV_EXECUTABLE): " PYTHON_VENV_EXECUTABLE
+        if [ -z $PYTHON_VENV_EXECUTABLE ]; then
+            PYTHON_VENV_EXECUTABLE=$DEFAULT_PYTHON_VENV_EXECUTABLE
+            echo "--- Using default PYTHON_VENV_EXECUTABLE = $PYTHON_VENV_EXECUTABLE."
+        else
+            echo "--- Changed PYTHON_VENV_EXECUTABLE to $PYTHON_VENV_EXECUTABLE."
+        fi
+
+        echo "#!/bin/$shell_type" >> $KRATOS_ENV_SCRIPT_DIR/kratos_environment_paths.sh
+        echo "export KRATOS_WORKTREE_MASTER_PATH=\"$KRATOS_WORKTREE_MASTER_PATH\"" >> $KRATOS_ENV_SCRIPT_DIR/kratos_environment_paths.sh
+        echo "export PYTHON_VENV_PATH=\"$PYTHON_VENV_PATH\"" >> $KRATOS_ENV_SCRIPT_DIR/kratos_environment_paths.sh
+        echo "export KRATOS_CONFIGURATION_SCRIPT=\"$KRATOS_CONFIGURATION_SCRIPT\"" >> $KRATOS_ENV_SCRIPT_DIR/kratos_environment_paths.sh
+        echo "export PYTHON_VENV_EXECUTABLE=\"$PYTHON_VENV_EXECUTABLE\"" >> $KRATOS_ENV_SCRIPT_DIR/kratos_environment_paths.sh
+    fi
+    source $KRATOS_ENV_SCRIPT_DIR/kratos_environment_paths.sh
 }
 
 GetCompiledApplicationsList()
@@ -208,25 +268,13 @@ ConfigureVariables()
 
 ReInitializeVirtualEnvironment()
 {
-    if ! command -v virtualenv 2>&1 >/dev/null
-    then
-        echo "virtualenv could not be found. Install python-virtualenv or virtualenv packages."
-        exit 1
-    fi
-
     venv_name="$1"
     venv_path=$PYTHON_VENV_PATH/$venv_name
     if [ -d $venv_path ]; then
         rm -r $venv_path
     fi
 
-    cur_dir=$(pwd)
-    kratos_libs_path="$venv_path/lib"
-    virtualenv $venv_path --system-site-packages
-    source $PYTHON_VENV_PATH/$venv_name/bin/activate
-    site_packages_dir=$(python -c 'import site; print(site.getsitepackages()[0])')
-    deactivate
-    echo "export LD_LIBRARY_PATH=$site_packages_dir/libs:\$LD_LIBRARY_PATH" >> $venv_path/bin/activate
+    python -m $PYTHON_VENV_EXECUTABLE $venv_path --system-site-packages
 }
 
 InitalizePythonVirtualEnvironment()
@@ -238,6 +286,9 @@ InitalizePythonVirtualEnvironment()
     fi
     source $PYTHON_VENV_PATH/$venv_name/bin/activate
 }
+
+CheckAndInitializeEnvironmentVariables
+export KRATOS_BASE_PATH=$(dirname $KRATOS_WORKTREE_MASTER_PATH)
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
     Help
@@ -251,6 +302,8 @@ elif [ "$1" = "-r" ] || [ "$1" = "--remove" ]; then
         current_path=$(pwd)
         cd $KRATOS_WORKTREE_MASTER_PATH
         git worktree remove $environment_name
+        cd $PYTHON_VENV_PATH
+        find . -type d -regextype egrep -regex ".\/${environment_name}_(gcc|intel|clang)_(Release|RelWithDebInfo|Debug|FullDebug)" | xargs -I{} rm -rf {}
         cd $current_path
     fi
 elif [ "$1" = "-c" ] || [ "$1" = "--create" ]; then
@@ -298,54 +351,19 @@ else
             echo "-- Please use \"deactivate\" to deactivate existing environment and try again to load the new environment."
         else
             KRATOS_PATH=$KRATOS_BASE_PATH/$environment_name
-            KRATOS_BINARY_PATH=${KRATOS_PATH}/bin/${compiler_type}_${KRATOS_BUILD_TYPE}
-            KRATOS_LIBS_PATH=$KRATOS_BINARY_PATH/libs
             InitalizePythonVirtualEnvironment ${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}
 
             if [ ! -f $KRATOS_PATH/scripts/configure.sh ]; then
-                echo "-- No default $KRATOS_PATH/scripts/configure.sh found. Copying the templated $utilities_directory/$compile_configuration_file. file"
-                cp $utilities_directory/$compile_configuration_file $KRATOS_PATH/scripts/configure.sh
+                echo "-- No default $KRATOS_PATH/scripts/configure.sh found. Copying the templated $KRATOS_ENV_SCRIPT_DIR/$KRATOS_CONFIGURATION_SCRIPT. file"
+                cp $KRATOS_ENV_SCRIPT_DIR/scripts/$KRATOS_CONFIGURATION_SCRIPT $KRATOS_PATH/scripts/configure.sh
                 sed -i "s/<KRATOS_NAME>/$environment_name/g" $KRATOS_PATH/scripts/configure.sh
             fi
 
-            if [ ! -f $KRATOS_PATH/.vscode/c_cpp_properties.json ]; then
-                echo "-- No default $KRATOS_PATH/.vscode/c_cpp_properties.json found. Copying the templated $utilities_directory/c_cpp_properties.json.orig. file"
-                mkdir -p $KRATOS_PATH/.vscode
-                cp $utilities_directory/c_cpp_properties.json.orig $KRATOS_PATH/.vscode/c_cpp_properties.json
-            fi
-
-            if [ ! -f $KRATOS_PATH/.vscode/settings.json ]; then
-                echo "-- No default $KRATOS_PATH/.vscode/settings.json found. Copying the templated $utilities_directory/settings.json.orig. file"
-                mkdir -p $KRATOS_PATH/.vscode
-                cp $utilities_directory/settings.json.orig $KRATOS_PATH/.vscode/settings.json
-            fi
-
-            if [ ! -f $KRATOS_PATH/.vscode/tasks.json ]; then
-                echo "-- No default $KRATOS_PATH/.vscode/tasks.json found. Copying the templated $utilities_directory/tasks.json.orig. file"
-                mkdir -p $KRATOS_PATH/.vscode
-                cp $utilities_directory/tasks.json.orig $KRATOS_PATH/.vscode/tasks.json
-            fi
-
-            if [ ! -f $KRATOS_PATH/.vscode/launch.json ]; then
-                echo "-- No default $KRATOS_PATH/.vscode/launch.json found. Copying the templated $utilities_directory/launch.json.orig. file"
-                mkdir -p $KRATOS_PATH/.vscode
-                cp $utilities_directory/launch.json.orig $KRATOS_PATH/.vscode/launch.json
-            fi
-
-            if [ ! -f $KRATOS_PATH/.vscode/cpp_test.py ]; then
-                echo "-- No default $KRATOS_PATH/.vscode/cpp_test.py found. Copying the templated $utilities_directory/cpp_test.py file"
-                mkdir -p $KRATOS_PATH/.vscode
-                cp $utilities_directory/cpp_test.py $KRATOS_PATH/.vscode/cpp_test.py
-            fi
-
-            if [ ! -f $KRATOS_PATH/.clang-format ]; then
-                echo "-- No default $KRATOS_PATH/.clang-format found. Copying the $utilities_directory/.clang-format. file"
-                cp $utilities_directory/.clang-format $KRATOS_PATH/.clang-format
-            fi
-
-            if [ ! -f $KRATOS_PATH/.clangd ]; then
-                echo "-- No default $KRATOS_PATH/.clangd found. Copying the $utilities_directory/.clangd file"
-                cp $utilities_directory/.clangd $KRATOS_PATH/.clangd
+            # now copy the rest of the default files if they are not found.
+            list_of_files_copied=$(cp -rvn $KRATOS_ENV_SCRIPT_DIR/defaults/. $KRATOS_PATH/)
+            if [ ! -z $list_of_files_copied ]; then
+                echo "-- Following files are copied..."
+                echo $list_of_files_copied
             fi
 
             alias kratos_compile='current_path=$(pwd) && cd $KRATOS_PATH/scripts && unbuffer sh configure.sh 2>&1 | tee kratos.compile.log && cd $current_path || cd $current_path'
