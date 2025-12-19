@@ -8,7 +8,7 @@
             "name": "(gdb) Python Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${command:python.interpreterPath}",
+            "program": "<PYTHON_INTERPRETER>",
             "args": [
                 "${file}"
             ],
@@ -34,7 +34,7 @@
             "name": "(gdb) Cpp Launch (Latest)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/test/${input:TestSuiteName}",
+            "program": "${workspaceFolder}/build/${command:cpptools.activeConfigName}/test/${input:TestSuiteName}",
             "args": [
                 "--gtest_filter=\"${input:TestNamePattern}\""
             ],
@@ -44,6 +44,10 @@
                 {
                     "name": "OMP_NUM_THREADS",
                     "value": "1"
+                },
+                {
+                    "name": "LD_LIBRARY_PATH",
+                    "value": "<KRATOS_LIBS_DIR>"
                 }
             ],
             "externalConsole": false,
