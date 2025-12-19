@@ -7,9 +7,10 @@
             "label": "Build",
             "type": "shell",
             "linux": {
-                "command": "sh",
+                "command": "<SHELL_TYPE>",
                 "args": [
-                    "${workspaceFolder}/scripts/configure.sh"
+                    "${workspaceFolder}/scripts/configure.sh",
+                    "${command:cpptools.activeConfigName}"
                 ],
                 "problemMatcher": [
                     {
@@ -36,102 +37,15 @@
                     }
                 ]
             },
-            "options": {},
+            "options": {
+                "cwd": "${workspaceFolder}/scripts"
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
             },
             "presentation": {
                 "reveal": "always" //"silent"
-            }
-        },
-        {
-            "label": "Run all tests",
-            "type": "shell",
-            "linux": {
-                "command": "python"
-            },
-            "args": [
-                "${workspaceFolder}/kratos/python_scripts/testing/run_tests.py"
-            ],
-            "options": {
-                "cwd": "${workspaceFolder}",
-                "env": {
-                    "OMP_NUM_THREADS": "30"
-                }
-            },
-            "group": "test",
-            "presentation": {
-                "reveal": "always" //"silent"
-            }
-        },
-        {
-            "label": "Run cpp pattern tests",
-            "type": "shell",
-            "linux": {
-                "command": "python"
-            },
-            "args": [
-                "${workspaceFolder}/.vscode/cpp_test.py",
-                "${input:Application}",
-                "${input:TestNamePattern}"
-            ],
-            "options": {
-                "cwd": "${fileDirname}",
-                "env": {}
-            },
-            "group": "test",
-            "presentation": {
-                "reveal": "always" //"silent"
-            },
-            "dependsOn": [
-                "Build"
-            ]
-        },
-        {
-            "label": "Run current file",
-            "type": "shell",
-            "linux": {
-                "command": "python"
-            },
-            "args": [
-                "${file}"
-            ],
-            "options": {
-                "cwd": "${fileDirname}",
-                "env": {}
-            },
-            "group": "test",
-            "presentation": {
-                "reveal": "always" //"silent"
-            }
-        }
-    ],
-    "inputs": [
-        {
-            "id": "Application",
-            "type": "command",
-            "command": "memento.pickString",
-            "args": {
-                "id": "Application",
-                "description": "Application to be used",
-                "options": [
-                    "FluidDynamicsApplication",
-                    "HDF5Application",
-                    "RANSApplication",
-                    "None"
-                ],
-                "default": "FluidDynamicsApplication"
-            }
-        },
-        {
-            "id": "TestNamePattern",
-            "type": "command",
-            "command": "memento.promptString",
-            "args": {
-                "id": "TestNamePattern",
-                "description": "Test name pattern without \"*\"",
-                "default": ""
             }
         }
     ]
