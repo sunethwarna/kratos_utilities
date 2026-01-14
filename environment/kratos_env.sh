@@ -1,6 +1,12 @@
 #!/bin/bash
 
-KRATOS_ENV_SCRIPT_DIR=$(dirname $0)
+if [ ! -z "$BASH_VERSION" ]; then
+    KRATOS_ENV_SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
+elif [ ! -z "$ZSH_VERSION" ]; then
+    KRATOS_ENV_SCRIPT_DIR=$(dirname $0)
+else
+    echo "Unsupported shell. Only supports bash and zsh [ shell = $BASH_VERSION ]"
+fi
 
 Help()
 {
