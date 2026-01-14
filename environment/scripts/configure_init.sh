@@ -16,7 +16,7 @@ if [ ! -z "$VIRTUAL_ENV" ]; then
     python_venv_name=$(which python | rev | cut -d"/" -f3 | rev)
 
     python_venv_kratos_name=$(echo $python_venv_name | cut -d"_" -f1)
-    if [[ "$kratos_name" != "$python_venv_kratos_name" ]]; then
+    if [ "$kratos_name" != "$python_venv_kratos_name" ]; then
         echo -e "-- ${RED}Error: Initialized python environment (\"$python_venv_kratos_name\") and the kratos folder (\"$kratos_name\") mismatch.${RESET}"
         exit
     fi

@@ -2,12 +2,12 @@
 
 #### This script should be only executed from the "scripts" folder of Kratos. ###
 
-source ./configure_init.sh $1
+. ./configure_init.sh $1
 
 echo "===== Compiling kratos using \"$CC\" and \"$CXX\" in \"$KRATOS_BUILD_TYPE\"."
 
 # activate intel mkl
-source /opt/intel/oneapi/setvars.sh intel64
+. /opt/intel/oneapi/setvars.sh intel64
 
 # Function to add apps
 add_app () {
