@@ -10,7 +10,8 @@ RESET='\033[0m'
 
 if [ ! -z "$VIRTUAL_ENV" ]; then
     if [ ! -z "$1" ]; then
-        echo "-- Found already existing kratos environment initialization, therefore ignoring any input cpp configuration names given [ cpp_configuration_name = \"$1\" ]."
+        echo "-- Found already existing kratos environment initialization, therefore no input cpp configuration names are allowed [ cpp_configuration_name = \"$1\" ]."
+        exit
     fi
     python_venv_name=$(which python | rev | cut -d"/" -f3 | rev)
 
