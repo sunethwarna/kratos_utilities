@@ -313,7 +313,7 @@ case "$1" in
                 fi
 
                 # now copy the rest of the default files if they are not found.
-                cp -rvn $KRATOS_ENV_SCRIPT_DIR/defaults/. $KRATOS_PATH/.temp/
+                temp_copy=$(cp -rvn $KRATOS_ENV_SCRIPT_DIR/defaults/. $KRATOS_PATH/.temp/)
 
                 find $KRATOS_PATH/.temp/ -type f -exec sed -i "s/<SHELL_TYPE>/${KRATOS_SHELL_TYPE}/g" {} +
                 find $KRATOS_PATH/.temp/ -type f -exec sed -i "s@<KRATOS_LIBS_DIR>@${kratos_install_dir}/libs@g" {} +
