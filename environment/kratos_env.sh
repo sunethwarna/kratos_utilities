@@ -357,7 +357,7 @@ case "$1" in
                 find $KRATOS_PATH/.temp/ -type f -exec sed -i "s@<KRATOS_ENVIRONMENT_NAME>@${environment_name}@g" {} +
                 find $KRATOS_PATH/.temp/ -type f -exec sed -i "s@<SITE_PACKAGES_POSTFIX>@${site_packages_postfix}@g" {} +
 
-                list_of_files_copied=$(cp -rvn $KRATOS_PATH/.temp/. $KRATOS_PATH/)
+                list_of_files_copied=$(cp -rv --update=none $KRATOS_PATH/.temp/. $KRATOS_PATH/)
                 if [ -d "$KRATOS_PATH/.temp" ]; then
                     rm -r $KRATOS_PATH/.temp
                 fi
