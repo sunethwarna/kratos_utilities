@@ -8,7 +8,7 @@
             "name": "(gdb) Python Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "<PYTHON_INTERPRETER>",
+            "program": "<PYTHON_VENV_PATH>/<KRATOS_ENVIRONMENT_NAME>_${command:cpptools.activeConfigName}/bin/python",
             "args": [
                 "${file}"
             ],
@@ -47,7 +47,7 @@
                 },
                 {
                     "name": "LD_LIBRARY_PATH",
-                    "value": "<KRATOS_LIBS_DIR>"
+                    "value": "<PYTHON_VENV_PATH>/<KRATOS_ENVIRONMENT_NAME>_${command:cpptools.activeConfigName}/<SITE_PACKAGES_POSTFIX>/libs"
                 }
             ],
             "externalConsole": false,
