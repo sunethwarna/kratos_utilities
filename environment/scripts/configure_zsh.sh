@@ -88,6 +88,7 @@ cmake -H"${KRATOS_SOURCE}" -B"${KRATOS_BUILD}/${KRATOS_CPP_CONFIG_NAME}"   \
 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache                                       \
 -DKRATOS_GENERATE_PYTHON_STUBS=ON                                          \
 -DKRATOS_USE_FUTURE=OFF                                                    \
+-DUSE_EIGEN_SUITESPARSE=ON                                                 \
 # -DCMAKE_UNITY_BUILD=ON                                                     \
 # -DUSE_EIGEN_MKL=ON                                                         \
 # -DKRATOS_BUILD_BENCHMARK=ON                                                \
