@@ -350,7 +350,7 @@ case "$1" in
                 fi
 
                 # now copy the rest of the default files if they are not found.
-                temp_copy=$(cp -rvn $KRATOS_ENV_SCRIPT_DIR/defaults/. $KRATOS_PATH/.temp/)
+                temp_copy=$(cp -rv --update=none $KRATOS_ENV_SCRIPT_DIR/defaults/. $KRATOS_PATH/.temp/)
 
                 find $KRATOS_PATH/.temp/ -type f -exec sed -i "s/<SHELL_TYPE>/${KRATOS_SHELL_TYPE}/g" {} +
                 find $KRATOS_PATH/.temp/ -type f -exec sed -i "s@<PYTHON_VENV_PATH>@${PYTHON_VENV_PATH}@g" {} +
