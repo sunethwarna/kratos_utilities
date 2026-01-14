@@ -8,6 +8,10 @@ else
     echo "Unsupported shell. Only supports bash and zsh [ shell = $BASH_VERSION ]"
 fi
 
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+RESET='\033[0m'
+
 Help()
 {
     echo "Initializes specified kratos environment in the current terminal."
@@ -331,7 +335,7 @@ case "$1" in
                 alias kratos_compile='KratosCompile'
                 alias kratos_paraview_output='python $KRATOS_PATH/applications/HDF5Application/python_scripts/create_xdmf_file.py'
 
-                echo "Initialized kratos environment at $KRATOS_PATH successfully with $build_type."
+                echo -e "Initialized kratos environment at ${GREEN}${KRATOS_PATH}${RESET} successfully with ${GREEN}${build_type}${RESET}."
                 echo
                 echo "Following commands are available:"
                 echo "            kratos_compile: Compiles kratos with specified compiler (gcc|clang|intel) and with specified build type (release|debug|rel_with_deb_info)"
