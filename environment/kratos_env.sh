@@ -330,8 +330,8 @@ case "$1" in
                 KRATOS_PATH=$KRATOS_BASE_PATH/$environment_name
 
                 if [ ! -f "$PYTHON_VENV_PATH/${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}/bin/activate" ]; then
-                    python -m venv "$PYTHON_VENV_PATH/${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE} --system-site-packages
-                    echo "-- Created python venv at "$PYTHON_VENV_PATH/${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}"
+                    python -m venv "$PYTHON_VENV_PATH/${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}" --system-site-packages
+                    echo "-- Created python venv at $PYTHON_VENV_PATH/${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}"
                 fi
                 source $PYTHON_VENV_PATH/${environment_name}_${compiler_type}_${KRATOS_BUILD_TYPE}/bin/activate
                 kratos_install_dir=$(python -c 'import site; print(site.getsitepackages()[0])')

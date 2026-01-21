@@ -29,7 +29,7 @@ else
     cpp_configuration_name=$1
     if [ ! -d "$python_venv_path/${kratos_name}_${cpp_configuration_name}" ]; then
         # if the python environment not found, then create it
-        python -m venv $python_venv_path/${kratos_name}_${cpp_configuration_name} --system-site-packages
+        python -m venv "$python_venv_path/${kratos_name}_${cpp_configuration_name}" --system-site-packages
     fi
     # activate the python environment
     source $python_venv_path/${kratos_name}_${cpp_configuration_name}/bin/activate
