@@ -268,6 +268,25 @@ KratosCompile()
     cd $current_path
 }
 
+CopyIfNotExisting()
+{
+    src_dir=$1
+    dst_dir=$2
+
+    for file_name in $(find $src_dir -type f); do
+        rel_file_path=$(realpath --relative-to=$src_dir $file_name)
+        dst_file_path="${dst_dir}${rel_file_path}"
+        dst_file_dir=$(dirname $dst_file_path)
+        if [ ! -d $dst_file_dir ]; then
+            mkdir -p ${dst_file_dir}
+        fi
+        if [ ! -f ${dst_file_path} ]; then
+            echo "$file_name:$dst_file_path"
+            cp $file_name $dst_file_path
+        fi
+    done
+}
+
 case "$1" in
     -h)
         Help
@@ -350,21 +369,15 @@ case "$1" in
                 fi
 
                 # now copy the rest of the default files if they are not found.
-                temp_copy=$(cp -rv --update=none $KRATOS_ENV_SCRIPT_DIR/defaults/. $KRATOS_PATH/.temp/)
-
-                find $KRATOS_PATH/.temp/ -type f -exec sed -i "s/<SHELL_TYPE>/${KRATOS_SHELL_TYPE}/g" {} +
-                find $KRATOS_PATH/.temp/ -type f -exec sed -i "s@<PYTHON_VENV_PATH>@${PYTHON_VENV_PATH}@g" {} +
-                find $KRATOS_PATH/.temp/ -type f -exec sed -i "s@<KRATOS_ENVIRONMENT_NAME>@${environment_name}@g" {} +
-                find $KRATOS_PATH/.temp/ -type f -exec sed -i "s@<SITE_PACKAGES_POSTFIX>@${site_packages_postfix}@g" {} +
-
-                list_of_files_copied=$(cp -rv --update=none $KRATOS_PATH/.temp/. $KRATOS_PATH/)
-                if [ -d "$KRATOS_PATH/.temp" ]; then
-                    rm -r $KRATOS_PATH/.temp
-                fi
-                if [ ! -z $list_of_files_copied ]; then
-                    echo "-- Following files are copied..."
-                    echo $list_of_files_copied
-                fi
+                for copied_file in $(CopyIfNotExisting $KRATOS_ENV_SCRIPT_DIR/defaults/ $KRATOS_PATH/); do
+                    src_file=$(echo $copied_file | cut -d":" -f1)
+                    dst_file=$(echo $copied_file | cut -d":" -f2)
+                    echo "--- Copying $src_file -> $dst_file"
+                    sed -i "s/<SHELL_TYPE>/${KRATOS_SHELL_TYPE}/g" $dst_file
+                    sed -i "s@<PYTHON_VENV_PATH>@${PYTHON_VENV_PATH}@g" $dst_file
+                    sed -i "s@<KRATOS_ENVIRONMENT_NAME>@${environment_name}@g" $dst_file
+                    sed -i "s@<SITE_PACKAGES_POSTFIX>@${site_packages_postfix}@g" $dst_file
+                done
 
                 alias kratos_compile='KratosCompile'
                 alias kratos_paraview_output='python $KRATOS_PATH/applications/HDF5Application/python_scripts/create_xdmf_file.py'
